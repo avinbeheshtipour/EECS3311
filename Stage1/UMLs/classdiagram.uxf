@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.1">
+  <zoom_level>17</zoom_level>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>0</x>
+      <y>0</y>
+      <w>731</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>view</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>0</x>
+      <y>85</y>
+      <w>731</w>
+      <h>510</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+View
+--
+--
++ showCourses(courses: List&lt;Course&gt;): void
++ showCourse(course: Course): void
++ showMaterial(material: Material): void
++ showSummary(summary: String): void
++ showConcepts(concepts: List&lt;Concept&gt;): void
++ showAnswer(session: LearningSession): void
++ showStudyPlan(plan: StudyPlan): void
++ showFlashcards(cards: List&lt;Flashcard&gt;): void
++ showQuiz(quiz: Quiz): void
++ showQuizResult(result: QuizResult): void
++ showWeakTopics(scores: Map&lt;String, Double&gt;): void
++ showMessage(message: String): void
++ showError(message: String): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>323</x>
+      <y>629</y>
+      <w>442</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>MainGUI
+--
+- courseController: CourseController
+- studyController: StudyController
+--
++ start(): void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>272</x>
+      <y>952</y>
+      <w>476</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>CLI
+--
+- courseController: CourseController
+- studyController: StudyController
+--
++ start(): void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>901</x>
+      <y>0</y>
+      <w>1122</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>controller</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>901</x>
+      <y>85</y>
+      <w>1122</w>
+      <h>289</h>
+    </coordinates>
+    <panel_attributes>CourseController
+--
+- courseService: CourseService
+--
++ createCourse(name: String, subject: String, examDate: LocalDate): Course
++ uploadMaterial(file: File, courseId: String): Material
++ getCourse(courseId: String): Course
++ getCourses(): List&lt;Course&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>901</x>
+      <y>408</y>
+      <w>1122</w>
+      <h>595</h>
+    </coordinates>
+    <panel_attributes>StudyController
+--
+- studyRepository: StudyRepository
+- resultRepository: ResultRepository
+- ragEngine: RAGEngine
+- llmFacade: LLMFacade
+- progressAnalyzer: ProgressAnalyzer
+- quizGrader: QuizGrader
+--
++ summarize(material: Material): String
++ extractConcepts(material: Material): List&lt;Concept&gt;
++ answerQuestion(question: String, courseId: String): LearningSession
++ generateStudyPlan(course: Course, dailyHours: int): StudyPlan
++ generateFlashcards(material: Material, count: int): List&lt;Flashcard&gt;
++ generateFlashcards(concepts: List&lt;Concept&gt;, count: int): List&lt;Flashcard&gt;
++ generateQuiz(courseId: String, material: Material, type: QuizType, difficulty: Difficulty): Quiz
++ submitQuiz(quiz: Quiz, answers: Map&lt;Question, String&gt;): QuizResult
++ explain(question: Question, studentAnswer: String): String
++ viewWeakTopics(courseId: String): Map&lt;String, Double&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>2193</x>
+      <y>0</y>
+      <w>1156</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>service</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2193</x>
+      <y>85</y>
+      <w>1156</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>CourseService
+--
+- studyRepository: StudyRepository
+- ragEngine: RAGEngine
+--
++ createCourse(name: String, subject: String, examDate: LocalDate): Course
++ uploadMaterial(file: File, courseId: String): Material
+- extractText(file: File): String
+- validateCourseData(name: String, examDate: LocalDate): void
+- validateFile(file: File): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2193</x>
+      <y>476</y>
+      <w>1156</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>RAGEngine
+--
+- studyRepository: StudyRepository
+- chunkSize: int
+- topK: int
+--
++ index(material: Material): void
++ retrieve(question: String, courseId: String): List&lt;Chunk&gt;
+- createChunks(material: Material): List&lt;Chunk&gt;
+- calculateRelevance(question: String, chunk: Chunk): double</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2193</x>
+      <y>867</y>
+      <w>1156</w>
+      <h>374</h>
+    </coordinates>
+    <panel_attributes>ProgressAnalyzer
+--
+- resultRepository: ResultRepository
+- MIN_RESULTS: int = 2 {static, readOnly}
+- EASY_THRESHOLD: double = 0.50 {static, readOnly}
+- HARD_THRESHOLD: double = 0.80 {static, readOnly}
+- weakTopicThreshold: double
+--
++ getWeakTopics(courseId: String): Map&lt;String, Double&gt;
++ computeDifficulty(courseId: String): Difficulty
+- calculateRecentPerformance(results: List&lt;QuizResult&gt;): double</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>2193</x>
+      <y>1292</y>
+      <w>1156</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>QuizGrader
+--
+- llmFacade: LLMFacade
+--
++ grade(quiz: Quiz, answers: Map&lt;Question, String&gt;): QuizResult
+- gradeDeterministicQuestion(question: Question, answer: String): double
+- gradeShortAnswer(question: Question, answer: String): double</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>3519</x>
+      <y>0</y>
+      <w>1377</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>repository</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3519</x>
+      <y>85</y>
+      <w>1377</w>
+      <h>748</h>
+    </coordinates>
+    <panel_attributes>StudyRepository
+--
+- courses: Map&lt;String, Course&gt;
+- materials: Map&lt;String, Material&gt;
+- quizzes: Map&lt;String, Quiz&gt;
+- chunksByCourse: Map&lt;String, List&lt;Chunk&gt;&gt;
+- conceptsByCourse: Map&lt;String, List&lt;Concept&gt;&gt;
+- flashcardsByCourse: Map&lt;String, List&lt;Flashcard&gt;&gt;
+- studyPlansByCourse: Map&lt;String, List&lt;StudyPlan&gt;&gt;
+- learningSessionsByCourse: Map&lt;String, List&lt;LearningSession&gt;&gt;
+--
++ saveCourse(course: Course): void
++ findCourseById(courseId: String): Course
++ findAllCourses(): List&lt;Course&gt;
++ courseNameExists(name: String): boolean
++ saveMaterial(material: Material): void
++ findMaterialById(materialId: String): Material
++ getMaterials(courseId: String): List&lt;Material&gt;
++ saveChunks(courseId: String, chunks: List&lt;Chunk&gt;): void
++ getChunks(courseId: String): List&lt;Chunk&gt;
++ saveConcepts(courseId: String, concepts: List&lt;Concept&gt;): void
++ getConcepts(courseId: String): List&lt;Concept&gt;
++ saveFlashcards(courseId: String, cards: List&lt;Flashcard&gt;): void
++ saveStudyPlan(plan: StudyPlan): void
++ saveLearningSession(session: LearningSession): void
++ saveQuiz(quiz: Quiz): void
++ getQuiz(quizId: String): Quiz</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>3519</x>
+      <y>884</y>
+      <w>1377</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>ResultRepository
+--
+- resultsByCourse: Map&lt;String, List&lt;QuizResult&gt;&gt;
+--
++ save(result: QuizResult): void
++ getByCourseId(courseId: String): List&lt;QuizResult&gt;
++ getRecentResults(courseId: String, limit: int): List&lt;QuizResult&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>5100</x>
+      <y>0</y>
+      <w>952</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>ai</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>85</y>
+      <w>952</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+LLMClient
+--
++ generate(prompt: Prompt): String</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>306</y>
+      <w>952</w>
+      <h>306</h>
+    </coordinates>
+    <panel_attributes>GeminiClient
+--
+- instance: GeminiClient {static}
+- apiKey: String
+- modelName: String
+--
+- GeminiClient()
++ getInstance(): GeminiClient {static}
++ generate(prompt: Prompt): String</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>663</y>
+      <w>952</w>
+      <h>306</h>
+    </coordinates>
+    <panel_attributes>GeminiProxy
+--
+- realClient: LLMClient
+- cache: Map&lt;String, String&gt;
+- maxRetries: int
+--
++ generate(prompt: Prompt): String
+- getCachedResponse(prompt: Prompt): String
+- cacheResponse(prompt: Prompt, response: String): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>1037</y>
+      <w>884</w>
+      <h>289</h>
+    </coordinates>
+    <panel_attributes>Prompt
+--
+- content: String {readOnly}
+- taskType: String {readOnly}
+--
++ Prompt(content: String, taskType: String)
++ getContent(): String
++ getTaskType(): String</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>1377</y>
+      <w>799</w>
+      <h>391</h>
+    </coordinates>
+    <panel_attributes>PromptBuilder
+--
+- content: StringBuilder
+- taskType: String
+--
++ reset(): PromptBuilder
++ setTaskType(taskType: String): PromptBuilder
++ addInstruction(text: String): PromptBuilder
++ addContext(text: String): PromptBuilder
++ addQuestion(text: String): PromptBuilder
++ addParameter(name: String, value: String): PromptBuilder
++ build(): Prompt</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>1819</y>
+      <w>1020</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>ResponseParser
+--
+--
++ parseConcepts(response: String, courseId: String, materialId: String): List&lt;Concept&gt;
++ parseStudyPlan(response: String): List&lt;StudySession&gt;
++ parseFlashcards(response: String): List&lt;Flashcard&gt;
++ parseQuiz(response: String): List&lt;Question&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5100</x>
+      <y>2142</y>
+      <w>1479</w>
+      <h>408</h>
+    </coordinates>
+    <panel_attributes>LLMFacade
+--
+- promptBuilder: PromptBuilder
+- llmClient: LLMClient
+- responseParser: ResponseParser
+- activityFactory: LearningActivityFactory
+--
++ summarize(text: String): String
++ extractConcepts(material: Material): List&lt;Concept&gt;
++ answer(question: String, chunks: List&lt;Chunk&gt;): String
++ generateStudyPlan(course: Course, dailyHours: int, concepts: List&lt;Concept&gt;, weakTopics: Map&lt;String, Double&gt;): StudyPlan
++ generateFlashcards(material: Material, count: int): List&lt;Flashcard&gt;
++ generateFlashcards(concepts: List&lt;Concept&gt;, count: int): List&lt;Flashcard&gt;
++ generateQuiz(material: Material, type: QuizType, difficulty: Difficulty): Quiz
++ explain(question: Question, answer: String): String
+- gradeShortAnswer(question: Question, studentAnswer: String): AnswerEvaluation</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>6392</x>
+      <y>0</y>
+      <w>1394</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>factory</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>6392</x>
+      <y>85</y>
+      <w>1394</w>
+      <h>221</h>
+    </coordinates>
+    <panel_attributes>LearningActivityFactory
+--
+--
++ createStudyPlan(courseId: String, hours: int, sessions: List&lt;StudySession&gt;): StudyPlan
++ createFlashcards(courseId: String, parsedCards: List&lt;Flashcard&gt;): List&lt;Flashcard&gt;
++ createQuiz(courseId: String, materialId: String, type: QuizType, difficulty: Difficulty, questions: List&lt;Question&gt;): Quiz</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>8534</x>
+      <y>0</y>
+      <w>1309</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>model</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>85</y>
+      <w>1309</w>
+      <h>289</h>
+    </coordinates>
+    <panel_attributes>Course
+--
+- courseId: String
+- courseName: String
+- subject: String
+- examDate: LocalDate
+--
++ Course(courseId: String, name: String, subject: String, examDate: LocalDate)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>408</y>
+      <w>1309</w>
+      <h>374</h>
+    </coordinates>
+    <panel_attributes>Material
+--
+- materialId: String
+- courseId: String
+- fileName: String
+- fileType: String
+- extractedText: String
+- summary: String
+- uploadedAt: LocalDateTime
+--
++ hasText(): boolean</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>833</y>
+      <w>1309</w>
+      <h>306</h>
+    </coordinates>
+    <panel_attributes>Chunk
+--
+- chunkId: String
+- materialId: String
+- courseId: String
+- text: String
+- chunkIndex: int
+- sourceReference: String
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>1207</y>
+      <w>1309</w>
+      <h>289</h>
+    </coordinates>
+    <panel_attributes>Concept
+--
+- conceptId: String
+- courseId: String
+- materialId: String
+- name: String
+- definition: String
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>1547</y>
+      <w>1309</w>
+      <h>306</h>
+    </coordinates>
+    <panel_attributes>Flashcard
+--
+- flashcardId: String
+- courseId: String
+- front: String
+- back: String
+- topic: String
+- sourceMaterialId: String
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>1921</y>
+      <w>1309</w>
+      <h>306</h>
+    </coordinates>
+    <panel_attributes>StudyPlan
+--
+- studyPlanId: String
+- courseId: String
+- dailyHours: int
+- createdAt: LocalDateTime
+- sessions: List&lt;StudySession&gt;
+--
++ addSession(session: StudySession): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>2278</y>
+      <w>1309</w>
+      <h>289</h>
+    </coordinates>
+    <panel_attributes>StudySession
+--
+- studySessionId: String
+- date: LocalDate
+- topic: String
+- durationMinutes: int
+- activity: String
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>2618</y>
+      <w>1309</w>
+      <h>391</h>
+    </coordinates>
+    <panel_attributes>Quiz
+--
+- quizId: String
+- courseId: String
+- materialId: String
+- quizType: QuizType
+- difficulty: Difficulty
+- questions: List&lt;Question&gt;
+- createdAt: LocalDateTime
+--
++ addQuestion(question: Question): void
++ getQuestionCount(): int</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>3077</y>
+      <w>1309</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>Question
+--
+- questionId: String
+- text: String
+- questionType: QuestionType
+- options: List&lt;String&gt;
+- correctAnswer: String
+- topic: String
+- points: double
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>3468</y>
+      <w>1309</w>
+      <h>391</h>
+    </coordinates>
+    <panel_attributes>QuizResult
+--
+- resultId: String
+- quizId: String
+- courseId: String
+- score: double
+- maximumScore: double
+- percentage: double
+- topicScores: Map&lt;String, Double&gt;
+- pendingReview: boolean
+- completedAt: LocalDateTime
+- questionResults: List&lt;QuestionResult&gt;
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8534</x>
+      <y>3927</y>
+      <w>1309</w>
+      <h>306</h>
+    </coordinates>
+    <panel_attributes>LearningSession
+--
+- sessionId: String
+- courseId: String
+- question: String
+- answer: String
+- sourceChunkIds: List&lt;String&gt;
+- createdAt: LocalDateTime
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>6953</x>
+      <y>935</y>
+      <w>867</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>model.enums</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>6953</x>
+      <y>1003</y>
+      <w>867</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+Difficulty
+--
+--
+EASY
+MEDIUM
+HARD
+ADAPTIVE</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>6953</x>
+      <y>1275</y>
+      <w>867</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+QuizType
+--
+--
+MULTIPLE_CHOICE
+TRUE_FALSE
+SHORT_ANSWER
+MIXED</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>6953</x>
+      <y>1530</y>
+      <w>867</w>
+      <h>221</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+QuestionType
+--
+--
+MULTIPLE_CHOICE
+TRUE_FALSE
+SHORT_ANSWER</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLPackage</id>
+    <coordinates>
+      <x>7021</x>
+      <y>2380</y>
+      <w>918</w>
+      <h>68</h>
+    </coordinates>
+    <panel_attributes>app</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>7021</x>
+      <y>2448</y>
+      <w>918</w>
+      <h>170</h>
+    </coordinates>
+    <panel_attributes>StudyAgentApp
+--
+--
++ main(args: String[]): void {static}</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>272</x>
+      <y>578</y>
+      <w>51</w>
+      <h>408</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;220.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>204</y>
+      <w>187</w>
+      <h>595</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;327.0;90.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>697</y>
+      <w>187</w>
+      <h>102</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;34.0;90.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>731</x>
+      <y>204</y>
+      <w>204</w>
+      <h>918</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;519.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>731</x>
+      <y>697</y>
+      <w>204</w>
+      <h>425</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;226.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>204</y>
+      <w>221</w>
+      <h>85</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;27.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3332</x>
+      <y>238</y>
+      <w>221</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;129.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2754</x>
+      <y>408</y>
+      <w>51</w>
+      <h>102</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;38.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>476</y>
+      <w>1547</w>
+      <h>1224</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;167.0;40.0;170.0;30.0;700.0;840.0;700.0;840.0;10.0;890.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>697</y>
+      <w>1547</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;10.0;50.0;80.0;860.0;80.0;860.0;180.0;890.0;180.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>629</y>
+      <w>221</w>
+      <h>136</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;53.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>697</y>
+      <w>3128</w>
+      <h>1734</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;80.0;10.0;80.0;670.0;1350.0;650.0;1350.0;990.0;1820.0;996.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>697</y>
+      <w>221</w>
+      <h>391</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;209.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>2006</x>
+      <y>697</y>
+      <w>221</w>
+      <h>765</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;110.0;425.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3332</x>
+      <y>986</y>
+      <w>221</w>
+      <h>102</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;39.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3332</x>
+      <y>1411</y>
+      <w>1802</w>
+      <h>1037</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;1040.0;581.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3332</x>
+      <y>442</y>
+      <w>221</w>
+      <h>255</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;124.0;110.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>6239</x>
+      <y>170</y>
+      <w>561</w>
+      <h>2261</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>200.0;1306.0;300.0;1310.0;310.0;1090.0;10.0;1100.0;30.0;10.0;90.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>5865</x>
+      <y>1309</y>
+      <w>119</w>
+      <h>102</h>
+    </coordinates>
+    <panel_attributes>lt=..&gt;
+create</panel_attributes>
+    <additional_attributes>20.0;38.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>7769</x>
+      <y>170</y>
+      <w>799</w>
+      <h>2686</h>
+    </coordinates>
+    <panel_attributes>lt=..&gt;
+create</panel_attributes>
+    <additional_attributes>10.0;10.0;450.0;1556.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>7769</x>
+      <y>170</y>
+      <w>799</w>
+      <h>1564</h>
+    </coordinates>
+    <panel_attributes>lt=..&gt;
+create</panel_attributes>
+    <additional_attributes>10.0;10.0;450.0;900.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>7769</x>
+      <y>170</y>
+      <w>799</w>
+      <h>1938</h>
+    </coordinates>
+    <panel_attributes>lt=..&gt;
+create</panel_attributes>
+    <additional_attributes>10.0;10.0;450.0;1116.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>340</x>
+      <y>578</y>
+      <w>119</w>
+      <h>85</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>5032</x>
+      <y>187</y>
+      <w>136</w>
+      <h>510</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>40.0;10.0;10.0;10.0;10.0;280.0;60.0;280.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>5151</x>
+      <y>221</y>
+      <w>51</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>5457</x>
+      <y>2057</y>
+      <w>51</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>4998</x>
+      <y>1581</y>
+      <w>136</w>
+      <h>714</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>60.0;10.0;10.0;10.0;10.0;400.0;60.0;400.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>4964</x>
+      <y>119</y>
+      <w>170</w>
+      <h>2142</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>80.0;10.0;10.0;10.0;10.0;1240.0;80.0;1240.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>8466</x>
+      <y>119</y>
+      <w>102</w>
+      <h>493</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>40.0;270.0;10.0;270.0;10.0;10.0;40.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>8449</x>
+      <y>340</y>
+      <w>119</w>
+      <h>1411</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>50.0;810.0;20.0;810.0;10.0;10.0;50.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>8398</x>
+      <y>306</y>
+      <w>170</w>
+      <h>2601</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>80.0;1510.0;20.0;1510.0;10.0;10.0;80.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>8364</x>
+      <y>255</y>
+      <w>204</w>
+      <h>3927</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>100.0;2290.0;20.0;2290.0;10.0;10.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>9826</x>
+      <y>595</y>
+      <w>102</w>
+      <h>357</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;40.0;10.0;40.0;190.0;10.0;190.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>9826</x>
+      <y>476</y>
+      <w>119</w>
+      <h>867</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;490.0;50.0;490.0;50.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>9809</x>
+      <y>2057</y>
+      <w>136</w>
+      <h>391</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0;60.0;210.0;20.0;210.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>9826</x>
+      <y>2822</y>
+      <w>204</w>
+      <h>952</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=..*0..1</panel_attributes>
+    <additional_attributes>10.0;530.0;100.0;530.0;100.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>9826</x>
+      <y>2737</y>
+      <w>136</w>
+      <h>527</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;60.0;10.0;60.0;290.0;10.0;290.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>9911</x>
+      <y>3808</y>
+      <w>459</w>
+      <h>323</h>
+    </coordinates>
+    <panel_attributes>QuestionResult
+--
+- questionId: String
+- studentAnswer: String
+- awardedPoints: double
+- maximumPoints: double
+- gradingStatus: GradingStatus
+- feedback: String
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>6953</x>
+      <y>1768</y>
+      <w>867</w>
+      <h>323</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enumeration&gt;&gt;
+GradingStatus
+--
+--
+GRADED
+PENDING_REVIEW
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>9826</x>
+      <y>3808</y>
+      <w>119</w>
+      <h>153</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>5321</x>
+      <y>2686</y>
+      <w>680</w>
+      <h>323</h>
+    </coordinates>
+    <panel_attributes>AnswerEvaluation
+--
+- awardedPoints: double
+- gradingStatus: GradingStatus
+- feedback: String
+--
++ AnswerEvaluation(awardedPoints: double, gradingStatus:
+GradingStatus, feedback: String)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>3332</x>
+      <y>1462</y>
+      <w>2023</w>
+      <h>1309</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+</panel_attributes>
+    <additional_attributes>1170.0;750.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>5457</x>
+      <y>2533</y>
+      <w>68</w>
+      <h>187</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>20.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
