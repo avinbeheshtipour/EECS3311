@@ -15,7 +15,7 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <main.class>com.studyagent.App</main.class>
+        <main.class>com.studyagent.CLIView</main.class>
 
         <dotenv.version>3.0.2</dotenv.version>
         <jackson.version>2.17.2</jackson.version>
