@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 /**
  * Command-line view. Reads input from stdin and sends every request through
@@ -15,7 +16,7 @@ public class CLIView {
     private static final String HELP = """
             Type a question and press Enter to ask it.
             Commands:
-              /load <file>   Add a plain-text file of notes for answers to draw on
+              upload <file>  Add a PDF or TXT file of course material for answers to draw on
               /help          Show this help
               /quit          Exit
             """;
@@ -74,14 +75,30 @@ public class CLIView {
     private void handle(String line) {
         if (line.equals("/help")) {
             out.println(HELP);
-        } else if (line.equals("/load") || line.startsWith("/load ")) {
-            show(controller.loadMaterialFile(line.substring("/load".length())));
+        } else if (isUploadCommand(line)) {
+            out.println("Uploading...");
+            show(controller.uploadFile(line.substring(line.indexOf("upload") + "upload".length())));
         } else if (line.startsWith("/")) {
             out.println("Unknown command. Type /help to see the commands.");
         } else {
             out.println("Thinking...");
             show(controller.askQuestion(line));
         }
+    }
+
+    /**
+     * Matches "/upload ..." always, but "upload ..." only when it ends in a file
+     * extension, so a question such as "upload speed vs download speed?" is still asked.
+     */
+    private static boolean isUploadCommand(String line) {
+        if (line.equals("/upload") || line.startsWith("/upload ")) {
+            return true;
+        }
+        if (!line.toLowerCase(Locale.ROOT).startsWith("upload ")) {
+            return false;
+        }
+        String arg = line.substring("upload ".length()).trim().replaceAll("^[\"']|[\"']$", "");
+        return arg.matches(".*\\.[A-Za-z0-9]{1,5}");
     }
 
     private void show(StudyController.Response response) {

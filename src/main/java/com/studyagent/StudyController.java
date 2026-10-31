@@ -2,8 +2,7 @@
 package com.studyagent;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 /**
@@ -42,18 +41,33 @@ public class StudyController {
         return Response.ok("Material added.");
     }
 
-    /** Reads a plain-text file of notes and indexes it. */
-    public Response loadMaterialFile(String path) {
+    /** F02 - Uploads a PDF or TXT file into the knowledge base. */
+    public Response uploadFile(String path) {
         if (path == null || path.isBlank()) {
-            return Response.error("Please give a file path.");
+            return Response.error("Please give a file path, e.g. upload notes.pdf");
         }
-        Path file = Path.of(path.trim());
+        Path file;
         try {
-            service.addMaterial(Files.readString(file, StandardCharsets.UTF_8));
-            return Response.ok("Loaded " + file.getFileName() + ".");
-        } catch (IOException e) {
-            return Response.error("Could not read " + file + ": " + e.getMessage());
+            file = Path.of(stripQuotes(path.trim()));
+        } catch (InvalidPathException e) {
+            return Response.error("Invalid file path: " + path.trim());
         }
+        try {
+            int count = service.uploadFile(file).size();
+            return Response.ok("Uploaded " + file.getFileName() + " (" + count
+                    + (count == 1 ? " chunk" : " chunks") + ").");
+        } catch (IllegalArgumentException | IOException e) {
+            return Response.error("Could not upload " + file.getFileName() + ": " + e.getMessage());
+        }
+    }
+
+    /** Terminals often wrap dragged-in paths containing spaces in quotes. */
+    private static String stripQuotes(String path) {
+        if (path.length() >= 2 && (path.startsWith("\"") && path.endsWith("\"")
+                || path.startsWith("'") && path.endsWith("'"))) {
+            return path.substring(1, path.length() - 1);
+        }
+        return path;
     }
 
     /** The outcome of a request: either a message to show, or an error to show. */

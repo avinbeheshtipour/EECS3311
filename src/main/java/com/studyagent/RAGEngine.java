@@ -47,6 +47,13 @@ public class RAGEngine {
         }
     }
 
+    /** Stores an already-split chunk as-is, without re-splitting it. */
+    public void index(Chunk chunk) {
+        if (chunk != null && chunk.content() != null && !chunk.content().isBlank()) {
+            chunks.add(chunk.content());
+        }
+    }
+
     /** Returns up to 3 chunks ranked by how many query keywords they contain; empty if none match. */
     public List<String> retrieve(String query) {
         Set<String> keywords = keywords(query);

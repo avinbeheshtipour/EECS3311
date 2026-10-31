@@ -19,6 +19,7 @@
 
         <dotenv.version>3.0.2</dotenv.version>
         <jackson.version>2.17.2</jackson.version>
+        <pdfbox.version>3.0.3</pdfbox.version>
         <junit.version>5.10.3</junit.version>
     </properties>
 
@@ -35,6 +36,13 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Extracts text from uploaded PDF course material -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
         </dependency>
 
         <dependency>
