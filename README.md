@@ -52,37 +52,54 @@ java -jar target/ai-study-agent.jar
 
 Run from the project root so the `.env` file is found.
 
-## Usage
-
-| Command | What it does |
-|---|---|
-| `/explain <topic>` | Step-by-step explanation with an example |
-| `/quiz <topic>` | 5-question multiple-choice quiz with answer key |
-| `/flashcards <topic>` | 10 Q/A flashcards |
-| `/summarize` | Paste notes, then type `END` on its own line |
-| `/reset` | Clear conversation history |
-| `/help` | Show commands |
-| `/quit` | Exit |
-
-Anything else you type is sent as a normal question, and the agent remembers the conversation so you can ask follow-ups.
-
+To open the desktop window instead of the CLI:
+```bash
+mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 ```
-> /explain Big-O notation
-> can you give me a harder example?
-> /quiz Big-O notation
+
+## CLI Commands
+
+| Command | What it does | Status |
+|---|---|---|
+| `ask <question>` | Ask a question; answers draw on any uploaded material | Available (you can also just type the question) |
+| `upload <file>` | Add a PDF or TXT file of course material to the knowledge base | Available |
+| `quiz <topic>` | Generate a quiz on a topic | Planned |
+| `flashcard <topic>` | Generate flashcards on a topic | Planned |
+| `plan <topic> <days>` | Build a study plan for a topic over a number of days | Planned |
+| `summarize <file>` | Summarize a PDF or TXT file | Planned |
+| `progress` | Show your study progress | Planned |
+| `export` | Export your study material | Planned |
+| `recommend` | Recommend what to study next | Planned |
+| `graph <topic>` | Show how concepts in a topic relate | Planned |
+| `history` | Show your past questions and answers | Planned |
+| `quit` | Exit the program | Available as `/quit` |
+
+`/help` lists the commands available in the current build.
+
+Example session:
 ```
+> upload lecture3.pdf
+Uploaded lecture3.pdf (12 chunks).
+> What is the difference between an abstract class and an interface?
+```
+
+Uploaded files are split into chunks of about 200 words. When you ask a question, the 3 chunks that best match its keywords are sent to Gemini as context. Scanned PDFs (images of text) can't be read.
 
 ## Project Structure
 
 ```
 src/main/java/com/studyagent/
-├── App.java                 # CLI entry point and command handling
-├── agent/StudyAgent.java    # Study features and conversation history
-├── config/AppConfig.java    # Loads GEMINI_API_KEY / GEMINI_MODEL from .env
-└── llm/
-    ├── GeminiClient.java    # Calls the Gemini generateContent REST API
-    └── Message.java         # A single user/model conversation turn
-src/test/java/com/studyagent/  # JUnit 5 tests (no API key or network needed)
+├── CLIView.java              # View: command-line interface (main class)
+├── MainGUI.java              # View: Swing window (Upload button so far)
+├── StudyController.java      # Controller: routes CLI and GUI requests to StudyService
+├── StudyService.java         # Model: study features (Q&A, uploads)
+├── KnowledgeRepository.java  # Parses PDF/TXT files into Chunks
+├── Chunk.java                # A ~200-word piece of uploaded material
+├── RAGEngine.java            # Indexes chunks and retrieves the most relevant ones
+├── Prompt.java               # Builder pattern: assembles prompts
+├── LLMFacade.java            # Facade pattern: single entry point to the LLM
+├── GeminiProxy.java          # Proxy pattern: caching and retries
+└── GeminiClient.java         # Singleton pattern: the Gemini API connection
 ```
 
 ## Troubleshooting
