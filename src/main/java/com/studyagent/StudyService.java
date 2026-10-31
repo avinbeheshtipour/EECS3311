@@ -39,15 +39,34 @@ public class StudyService {
             throw new IllegalArgumentException("Please enter a question.");
         }
 
-        List<String> relevant = ragEngine.retrieve(input);
-
         Prompt prompt = Prompt.builder()
                 .topic(input)
-                .context(relevant.isEmpty() ? null : String.join("\n\n---\n\n", relevant))
+                .context(relevantContext(input))
                 .format("a clear, concise answer to the student's question; if context is given,"
                         + " base the answer on it and say when the context does not cover the question")
                 .build();
 
         return llm.ask(prompt);
+    }
+
+    /** F03 - Generates a 5-question multiple-choice quiz, drawing on uploaded material when relevant. */
+    public Quiz generateQuiz(String topic) throws IOException, InterruptedException {
+        if (topic == null || topic.isBlank()) {
+            throw new IllegalArgumentException("Please give a quiz topic, e.g. quiz recursion");
+        }
+
+        Prompt prompt = Prompt.builder()
+                .topic(topic)
+                .context(relevantContext(topic))
+                .format(LearningActivityFactory.QUIZ_FORMAT)
+                .build();
+
+        return LearningActivityFactory.createQuiz(topic.trim(), llm.ask(prompt));
+    }
+
+    /** The best-matching uploaded chunks joined into one context block, or null if none match. */
+    private String relevantContext(String query) {
+        List<String> relevant = ragEngine.retrieve(query);
+        return relevant.isEmpty() ? null : String.join("\n\n---\n\n", relevant);
     }
 }

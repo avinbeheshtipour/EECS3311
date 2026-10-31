@@ -63,7 +63,7 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 |---|---|---|
 | `ask <question>` | Ask a question; answers draw on any uploaded material | Available (you can also just type the question) |
 | `upload <file>` | Add a PDF or TXT file of course material to the knowledge base | Available |
-| `quiz <topic>` | Generate a quiz on a topic | Planned |
+| `quiz <topic>` | Take a 5-question multiple-choice quiz, then see your score and corrections | Available |
 | `flashcard <topic>` | Generate flashcards on a topic | Planned |
 | `plan <topic> <days>` | Build a study plan for a topic over a number of days | Planned |
 | `summarize <file>` | Summarize a PDF or TXT file | Planned |

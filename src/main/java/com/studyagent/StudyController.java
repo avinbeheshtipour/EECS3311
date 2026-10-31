@@ -4,6 +4,7 @@ package com.studyagent;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Receives requests from any view (CLI or GUI), forwards them to
@@ -30,6 +31,36 @@ public class StudyController {
         } catch (IOException e) {
             return Response.error("Could not get an answer: " + e.getMessage());
         }
+    }
+
+    /** F03 - Generates a multiple-choice quiz on the topic. */
+    public QuizResponse generateQuiz(String topic) {
+        if (topic == null || topic.isBlank()) {
+            return QuizResponse.error("Please give a quiz topic, e.g. quiz recursion");
+        }
+        try {
+            return QuizResponse.ok(service.generateQuiz(topic.trim()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return QuizResponse.error("The request was interrupted.");
+        } catch (IllegalArgumentException | IOException e) {
+            return QuizResponse.error("Could not generate a quiz: " + e.getMessage());
+        }
+    }
+
+    /** Grades the answers (option letters, in question order) and reports the score with corrections. */
+    public Response submitQuiz(Quiz quiz, List<String> answers) {
+        int score = quiz.grade(answers);
+        StringBuilder result = new StringBuilder("You scored " + score + "/" + quiz.size() + ".");
+        for (int i = 0; i < quiz.size(); i++) {
+            String given = i < answers.size() ? answers.get(i) : null;
+            if (!quiz.isCorrect(i, given)) {
+                result.append("\nQuestion ").append(i + 1).append(": correct answer ")
+                        .append(quiz.correctAnswers().get(i))
+                        .append(given == null || given.isBlank() ? " (skipped)" : ", you answered " + given);
+            }
+        }
+        return Response.ok(result.toString());
     }
 
     /** Indexes study material typed or pasted directly into the view. */
@@ -79,6 +110,18 @@ public class StudyController {
 
         public static Response error(String message) {
             return new Response(false, message);
+        }
+    }
+
+    /** The outcome of a quiz request: the quiz on success, or an error message to show. */
+    public record QuizResponse(boolean success, String message, Quiz quiz) {
+
+        public static QuizResponse ok(Quiz quiz) {
+            return new QuizResponse(true, "Generated a " + quiz.size() + "-question quiz on " + quiz.topic() + ".", quiz);
+        }
+
+        public static QuizResponse error(String message) {
+            return new QuizResponse(false, message, null);
         }
     }
 }
