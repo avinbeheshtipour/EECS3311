@@ -70,8 +70,8 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 | `progress` | Show your study progress | Planned |
 | `export` | Export your study material | Planned |
 | `recommend` | Recommend what to study next | Planned |
-| `graph <topic>` | Show how concepts in a topic relate | Planned |
-| `history` | Show your past questions and answers | Planned |
+| `graph <topic>` | Show how the concepts in a topic connect (as an adjacency list) | Available |
+| `history` | Show the questions you've asked this session and their answers | Available |
 | `quit` | Exit the program | Available as `/quit` |
 
 `/help` lists the commands available in the current build.

@@ -3,6 +3,7 @@ package com.studyagent;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 /**
  * F01 - Basic AI Q&A. Answers a student's question, grounding the answer in
@@ -15,6 +16,8 @@ public class StudyService {
     private final RAGEngine ragEngine;
     private final KnowledgeRepository knowledgeRepository;
     private final LLMFacade llm;
+    private final KnowledgeGraph knowledgeGraph;
+    private final ConversationMemory memory = new ConversationMemory();
 
     public StudyService() {
         this(new RAGEngine(), new LLMFacade());
@@ -24,6 +27,7 @@ public class StudyService {
         this.ragEngine = ragEngine;
         this.knowledgeRepository = new KnowledgeRepository(ragEngine);
         this.llm = llm;
+        this.knowledgeGraph = new KnowledgeGraph(llm);
     }
 
     /** Indexes notes, slides or readings so later questions can draw on them. */
@@ -48,7 +52,19 @@ public class StudyService {
                         + " base the answer on it and say when the context does not cover the question")
                 .build();
 
-        return llm.ask(prompt);
+        String answer = llm.ask(prompt);
+        memory.add(input.trim(), answer);
+        return answer;
+    }
+
+    /** F12 - Every question asked this session with its answer, oldest first. */
+    public List<ConversationMemory.Exchange> getHistory() {
+        return memory.getHistory();
+    }
+
+    /** F11 - Builds a graph of the concepts in a topic and how they relate. */
+    public Map<String, List<String>> buildGraph(String topic) throws IOException, InterruptedException {
+        return knowledgeGraph.buildGraph(topic);
     }
 
     /** F03 - Generates a 5-question multiple-choice quiz, drawing on uploaded material when relevant. */

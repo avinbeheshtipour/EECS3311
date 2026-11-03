@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Receives requests from any view (CLI or GUI), forwards them to
@@ -91,6 +92,26 @@ public class StudyController {
         } catch (IllegalArgumentException | IOException e) {
             return PlanResponse.error("Could not generate a study plan: " + e.getMessage());
         }
+    }
+
+    /** F11 - Builds a concept graph for the topic. */
+    public GraphResponse buildGraph(String topic) {
+        if (topic == null || topic.isBlank()) {
+            return GraphResponse.error("Please give a topic, e.g. graph recursion");
+        }
+        try {
+            return GraphResponse.ok(topic.trim(), service.buildGraph(topic.trim()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return GraphResponse.error("The request was interrupted.");
+        } catch (IllegalArgumentException | IOException e) {
+            return GraphResponse.error("Could not build a concept graph: " + e.getMessage());
+        }
+    }
+
+    /** F12 - The questions asked this session with their answers, oldest first. */
+    public List<ConversationMemory.Exchange> history() {
+        return service.getHistory();
     }
 
     /** The next card to review, or null when every card has been answered correctly. */
@@ -211,6 +232,18 @@ public class StudyController {
 
         public static PlanResponse error(String message) {
             return new PlanResponse(false, message, null);
+        }
+    }
+
+    /** The outcome of a graph request: the adjacency list on success, or an error message to show. */
+    public record GraphResponse(boolean success, String message, Map<String, List<String>> graph) {
+
+        public static GraphResponse ok(String topic, Map<String, List<String>> graph) {
+            return new GraphResponse(true, "Concept graph for " + topic + " (" + graph.size() + " concepts):", graph);
+        }
+
+        public static GraphResponse error(String message) {
+            return new GraphResponse(false, message, null);
         }
     }
 }

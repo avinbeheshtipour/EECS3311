@@ -22,6 +22,8 @@ public class CLIView {
               quiz <topic>         Take a 5-question multiple-choice quiz
               flashcard <topic>    Review 10 flashcards; missed cards come back until you get them
               plan <topic> <days>  Get a day-by-day study plan, e.g. plan recursion 7
+              graph <topic>        Show how the concepts in a topic connect
+              history              Show the questions you've asked this session
               /help                Show this help
               /quit                Exit
             """;
@@ -91,6 +93,10 @@ public class CLIView {
             runFlashcards(argument(line));
         } else if (command.equals("plan") || command.equals("/plan")) {
             showStudyPlan(argument(line));
+        } else if (command.equals("graph") || command.equals("/graph")) {
+            showGraph(argument(line));
+        } else if (line.equalsIgnoreCase("history") || line.equals("/history")) {
+            showHistory();
         } else if (line.startsWith("/")) {
             out.println("Unknown command. Type /help to see the commands.");
         } else {
@@ -180,6 +186,36 @@ public class CLIView {
         out.println("\n" + response.message());
         for (String milestone : response.plan().milestones()) {
             out.println("  " + milestone);
+        }
+        out.println();
+    }
+
+    private void showGraph(String topic) {
+        if (!topic.isEmpty()) {
+            out.println("Building concept graph...");
+        }
+        StudyController.GraphResponse response = controller.buildGraph(topic);
+        if (!response.success()) {
+            out.println("Error: " + response.message());
+            return;
+        }
+
+        out.println("\n" + response.message());
+        response.graph().forEach((concept, related) ->
+                out.println("  " + concept + " -> " + (related.isEmpty() ? "(none)" : String.join(", ", related))));
+        out.println();
+    }
+
+    private void showHistory() {
+        List<ConversationMemory.Exchange> history = controller.history();
+        if (history.isEmpty()) {
+            out.println("No questions asked yet this session.");
+            return;
+        }
+        for (int i = 0; i < history.size(); i++) {
+            ConversationMemory.Exchange exchange = history.get(i);
+            out.println("\n" + (i + 1) + ". Q: " + exchange.question());
+            out.println("   A: " + exchange.answer().replace("\n", "\n      "));
         }
         out.println();
     }
