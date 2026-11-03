@@ -18,11 +18,12 @@ public class CLIView {
     private static final String HELP = """
             Type a question and press Enter to ask it.
             Commands:
-              upload <file>      Add a PDF or TXT file of course material for answers to draw on
-              quiz <topic>       Take a 5-question multiple-choice quiz
-              flashcard <topic>  Review 10 flashcards; missed cards come back until you get them
-              /help              Show this help
-              /quit              Exit
+              upload <file>        Add a PDF or TXT file of course material for answers to draw on
+              quiz <topic>         Take a 5-question multiple-choice quiz
+              flashcard <topic>    Review 10 flashcards; missed cards come back until you get them
+              plan <topic> <days>  Get a day-by-day study plan, e.g. plan recursion 7
+              /help                Show this help
+              /quit                Exit
             """;
 
     private final StudyController controller;
@@ -88,6 +89,8 @@ public class CLIView {
             runQuiz(argument(line));
         } else if (command.matches("/?flashcards?")) {
             runFlashcards(argument(line));
+        } else if (command.equals("plan") || command.equals("/plan")) {
+            showStudyPlan(argument(line));
         } else if (line.startsWith("/")) {
             out.println("Unknown command. Type /help to see the commands.");
         } else {
@@ -155,6 +158,30 @@ public class CLIView {
             controller.recordFlashcardAnswer(card, correct);
         }
         show(controller.flashcardSummary(deck));
+    }
+
+    /** Handles "plan <topic> <days>": the last word is the number of days, the rest is the topic. */
+    private void showStudyPlan(String arguments) {
+        int lastSpace = arguments.lastIndexOf(' ');
+        String daysText = lastSpace < 0 ? arguments : arguments.substring(lastSpace + 1);
+        String topic = lastSpace < 0 ? "" : arguments.substring(0, lastSpace).trim();
+        if (topic.isEmpty() || !daysText.matches("\\d{1,4}")) {
+            out.println("Usage: plan <topic> <days>, e.g. plan recursion 7");
+            return;
+        }
+
+        out.println("Generating study plan...");
+        StudyController.PlanResponse response = controller.generateStudyPlan(topic, Integer.parseInt(daysText));
+        if (!response.success()) {
+            out.println("Error: " + response.message());
+            return;
+        }
+
+        out.println("\n" + response.message());
+        for (String milestone : response.plan().milestones()) {
+            out.println("  " + milestone);
+        }
+        out.println();
     }
 
     /** Returns true for y, false for n, or null if input ended or the user typed /quit. */

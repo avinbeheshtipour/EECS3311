@@ -48,7 +48,65 @@ public final class LearningActivityFactory {
     private static final Pattern CARD_BACK = Pattern.compile(
             "^(?:a(?:nswer)?|back)\\s*\\d*\\s*[:\\-]\\s*(.+)$", Pattern.CASE_INSENSITIVE);
 
+    // "Day 1: ...", "Days 2-3: ...", "1. Day 4 to 5 - ...", "Day 6 – ..."
+    private static final Pattern MILESTONE = Pattern.compile(
+            "^(?:\\d+\\s*[.)]\\s*)?days?\\s+(\\d+)(?:\\s*(?:-|–|—|to)\\s*(\\d+))?\\s*[:\\-–—]\\s*(.+)$",
+            Pattern.CASE_INSENSITIVE);
+
     private LearningActivityFactory() {
+    }
+
+    /** The layout {@link #createStudyPlan} expects for a plan lasting the given number of days. */
+    public static String studyPlanFormat(int days) {
+        int maxMilestones = Math.min(days, 10);
+        String count = maxMilestones <= 3 ? "exactly " + maxMilestones : "between 3 and " + maxMilestones;
+        return "a study plan covering days 1 to " + days + " with " + count + " milestones, in order,"
+                + " with no introduction or closing text, one milestone per line in this layout:\n"
+                + "Day <n>: <what to study and practise>\n"
+                + "or, for a milestone spanning several days:\n"
+                + "Days <first>-<last>: <what to study and practise>";
+    }
+
+    /**
+     * Parses day-labelled milestones in the {@link #studyPlanFormat} layout. The
+     * plan's duration is the last day any milestone covers.
+     *
+     * @throws IllegalArgumentException if no milestone can be found
+     */
+    public static StudyPlan createStudyPlan(String topic, String llmOutput) {
+        List<String> milestones = new ArrayList<>();
+        int lastDay = 0;
+        boolean milestoneClosed = false;
+
+        for (String rawLine : (llmOutput == null ? "" : llmOutput).split("\\R")) {
+            String line = clean(rawLine);
+            if (line.isEmpty()) {
+                // A blank line ends the milestone, so closing text isn't glued onto it.
+                milestoneClosed = true;
+                continue;
+            }
+
+            Matcher m = MILESTONE.matcher(line);
+            if (m.matches()) {
+                int first = Integer.parseInt(m.group(1));
+                int last = m.group(2) == null ? first : Math.max(first, Integer.parseInt(m.group(2)));
+                String label = first == last ? "Day " + first : "Days " + first + "-" + last;
+                milestones.add(label + ": " + m.group(3).trim());
+                lastDay = Math.max(lastDay, last);
+                milestoneClosed = false;
+            } else if (!milestones.isEmpty() && !milestoneClosed) {
+                // Sub-bullets and wrapped lines belong to the milestone above them.
+                int index = milestones.size() - 1;
+                String previous = milestones.get(index);
+                milestones.set(index, previous + (previous.endsWith(":") ? " " : "; ") + line);
+            }
+        }
+
+        if (milestones.isEmpty()) {
+            throw new IllegalArgumentException("Could not find a day-by-day plan for " + topic
+                    + " in the AI's reply. Please try again.");
+        }
+        return new StudyPlan(topic, milestones, lastDay);
     }
 
     /**

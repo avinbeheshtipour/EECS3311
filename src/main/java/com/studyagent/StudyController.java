@@ -78,6 +78,21 @@ public class StudyController {
         }
     }
 
+    /** F05 - Generates a study plan for the topic over the given number of days. */
+    public PlanResponse generateStudyPlan(String topic, int days) {
+        if (topic == null || topic.isBlank()) {
+            return PlanResponse.error("Please give a topic, e.g. plan recursion 7");
+        }
+        try {
+            return PlanResponse.ok(service.generateStudyPlan(topic.trim(), days));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return PlanResponse.error("The request was interrupted.");
+        } catch (IllegalArgumentException | IOException e) {
+            return PlanResponse.error("Could not generate a study plan: " + e.getMessage());
+        }
+    }
+
     /** The next card to review, or null when every card has been answered correctly. */
     public Flashcard nextFlashcard(List<Flashcard> deck, Flashcard previous) {
         return service.nextFlashcard(deck, previous);
@@ -183,6 +198,19 @@ public class StudyController {
 
         public static FlashcardResponse error(String message) {
             return new FlashcardResponse(false, message, null);
+        }
+    }
+
+    /** The outcome of a study plan request: the plan on success, or an error message to show. */
+    public record PlanResponse(boolean success, String message, StudyPlan plan) {
+
+        public static PlanResponse ok(StudyPlan plan) {
+            return new PlanResponse(true, "Study plan for " + plan.topic() + " (" + plan.durationDays()
+                    + (plan.durationDays() == 1 ? " day):" : " days):"), plan);
+        }
+
+        public static PlanResponse error(String message) {
+            return new PlanResponse(false, message, null);
         }
     }
 }

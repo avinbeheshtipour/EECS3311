@@ -10,6 +10,8 @@ import java.util.List;
  */
 public class StudyService {
 
+    static final int MAX_PLAN_DAYS = 365;
+
     private final RAGEngine ragEngine;
     private final KnowledgeRepository knowledgeRepository;
     private final LLMFacade llm;
@@ -77,6 +79,24 @@ public class StudyService {
                 .build();
 
         return LearningActivityFactory.createFlashcard(topic.trim(), llm.ask(prompt));
+    }
+
+    /** F05 - Breaks a topic into day-by-day milestones, drawing on uploaded material when relevant. */
+    public StudyPlan generateStudyPlan(String topic, int days) throws IOException, InterruptedException {
+        if (topic == null || topic.isBlank()) {
+            throw new IllegalArgumentException("Please give a topic, e.g. plan recursion 7");
+        }
+        if (days < 1 || days > MAX_PLAN_DAYS) {
+            throw new IllegalArgumentException("A study plan must be between 1 and " + MAX_PLAN_DAYS + " days.");
+        }
+
+        Prompt prompt = Prompt.builder()
+                .topic(topic)
+                .context(relevantContext(topic))
+                .format(LearningActivityFactory.studyPlanFormat(days))
+                .build();
+
+        return LearningActivityFactory.createStudyPlan(topic.trim(), llm.ask(prompt));
     }
 
     /**

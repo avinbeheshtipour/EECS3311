@@ -65,7 +65,7 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 | `upload <file>` | Add a PDF or TXT file of course material to the knowledge base | Available |
 | `quiz <topic>` | Take a 5-question multiple-choice quiz, then see your score and corrections | Available |
 | `flashcard <topic>` | Review 10 flashcards; cards you miss come back until you get them right | Available |
-| `plan <topic> <days>` | Build a study plan for a topic over a number of days | Planned |
+| `plan <topic> <days>` | Break a topic into day-by-day milestones, e.g. `plan recursion 7` | Available |
 | `summarize <file>` | Summarize a PDF or TXT file | Planned |
 | `progress` | Show your study progress | Planned |
 | `export` | Export your study material | Planned |
