@@ -18,10 +18,11 @@ public class CLIView {
     private static final String HELP = """
             Type a question and press Enter to ask it.
             Commands:
-              upload <file>  Add a PDF or TXT file of course material for answers to draw on
-              quiz <topic>   Take a 5-question multiple-choice quiz
-              /help          Show this help
-              /quit          Exit
+              upload <file>      Add a PDF or TXT file of course material for answers to draw on
+              quiz <topic>       Take a 5-question multiple-choice quiz
+              flashcard <topic>  Review 10 flashcards; missed cards come back until you get them
+              /help              Show this help
+              /quit              Exit
             """;
 
     private final StudyController controller;
@@ -85,6 +86,8 @@ public class CLIView {
             show(controller.uploadFile(argument(line)));
         } else if (command.equals("quiz") || command.equals("/quiz")) {
             runQuiz(argument(line));
+        } else if (command.matches("/?flashcards?")) {
+            runFlashcards(argument(line));
         } else if (line.startsWith("/")) {
             out.println("Unknown command. Type /help to see the commands.");
         } else {
@@ -117,6 +120,61 @@ public class CLIView {
             answers.add(answer);
         }
         show(controller.submitQuiz(quiz, answers));
+    }
+
+    /** Reviews a generated deck card by card until every card has been answered correctly. */
+    private void runFlashcards(String topic) throws IOException {
+        if (!topic.isEmpty()) {
+            out.println("Generating flashcards...");
+        }
+        StudyController.FlashcardResponse response = controller.generateFlashcards(topic);
+        if (!response.success()) {
+            out.println("Error: " + response.message());
+            return;
+        }
+
+        List<Flashcard> deck = response.cards();
+        out.println(response.message() + " Press Enter to flip each card, then answer y or n."
+                + " Type /quit to stop.");
+
+        Flashcard card = null;
+        while ((card = controller.nextFlashcard(deck, card)) != null) {
+            out.println("\nFront: " + card.front());
+            out.print("(press Enter to flip) ");
+            out.flush();
+            String line = in.readLine();
+            if (line == null || line.trim().equals("/quit")) {
+                break;
+            }
+            out.println("Back:  " + card.back());
+
+            Boolean correct = readYesNo();
+            if (correct == null) {
+                break;
+            }
+            controller.recordFlashcardAnswer(card, correct);
+        }
+        show(controller.flashcardSummary(deck));
+    }
+
+    /** Returns true for y, false for n, or null if input ended or the user typed /quit. */
+    private Boolean readYesNo() throws IOException {
+        while (true) {
+            out.print("Did you get it? (y/n): ");
+            out.flush();
+            String line = in.readLine();
+            if (line == null || line.trim().equals("/quit")) {
+                return null;
+            }
+            String answer = line.trim().toLowerCase(Locale.ROOT);
+            if (answer.equals("y") || answer.equals("yes")) {
+                return true;
+            }
+            if (answer.equals("n") || answer.equals("no")) {
+                return false;
+            }
+            out.println("Please answer y or n.");
+        }
     }
 
     /** Returns A-D, "" if skipped, or null if input ended or the user typed /quit. */

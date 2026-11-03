@@ -34,7 +34,69 @@ public final class LearningActivityFactory {
     private static final Pattern ANSWER =
             Pattern.compile("^(?:correct\\s+)?answer\\s*[:\\-]?\\s*\\(?([a-d])\\b.*$", Pattern.CASE_INSENSITIVE);
 
+    /** The layout {@link #createFlashcard} expects; include it in the prompt that generates the cards. */
+    public static final String FLASHCARD_FORMAT = """
+            exactly 10 flashcards with no introduction or closing text, each in this layout, \
+            with a blank line between cards:
+            Q: <term or question for the front>
+            A: <short answer for the back>""";
+
+    // "Q: ...", "1. Q: ...", "Question 2: ...", "Front - ..."
+    private static final Pattern CARD_FRONT = Pattern.compile(
+            "^(?:\\d+\\s*[.)]\\s*)?(?:q(?:uestion)?|front)\\s*\\d*\\s*[:\\-]\\s*(.+)$", Pattern.CASE_INSENSITIVE);
+    // "A: ...", "Answer: ...", "Back - ..."
+    private static final Pattern CARD_BACK = Pattern.compile(
+            "^(?:a(?:nswer)?|back)\\s*\\d*\\s*[:\\-]\\s*(.+)$", Pattern.CASE_INSENSITIVE);
+
     private LearningActivityFactory() {
+    }
+
+    /**
+     * Parses "Q: ... / A: ..." pairs in the {@link #FLASHCARD_FORMAT} layout into cards.
+     * A card missing either side is skipped.
+     *
+     * @throws IllegalArgumentException if no complete card can be found
+     */
+    public static List<Flashcard> createFlashcard(String topic, String llmOutput) {
+        List<Flashcard> cards = new ArrayList<>();
+        StringBuilder front = null;
+        StringBuilder back = null;
+        boolean cardClosed = false;
+
+        for (String rawLine : (llmOutput == null ? "" : llmOutput).split("\\R")) {
+            String line = clean(rawLine);
+            if (line.isEmpty()) {
+                // A blank line after the back ends the card, so closing text isn't glued onto it.
+                cardClosed = back != null;
+                continue;
+            }
+
+            Matcher m;
+            if ((m = CARD_FRONT.matcher(line)).matches()) {
+                addCardIfComplete(front, back, cards);
+                front = new StringBuilder(m.group(1).trim());
+                back = null;
+                cardClosed = false;
+            } else if (front != null && back == null && (m = CARD_BACK.matcher(line)).matches()) {
+                back = new StringBuilder(m.group(1).trim());
+            } else if (front != null && !cardClosed) {
+                // A wrapped line continues whichever side came just before it.
+                (back != null ? back : front).append(' ').append(line);
+            }
+        }
+        addCardIfComplete(front, back, cards);
+
+        if (cards.isEmpty()) {
+            throw new IllegalArgumentException("Could not find any flashcards on " + topic
+                    + " in the AI's reply. Please try again.");
+        }
+        return cards;
+    }
+
+    private static void addCardIfComplete(StringBuilder front, StringBuilder back, List<Flashcard> cards) {
+        if (front != null && back != null) {
+            cards.add(new Flashcard(front.toString(), back.toString()));
+        }
     }
 
     /**

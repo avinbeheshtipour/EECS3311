@@ -64,6 +64,49 @@ public class StudyService {
         return LearningActivityFactory.createQuiz(topic.trim(), llm.ask(prompt));
     }
 
+    /** F04 - Generates a deck of flashcards, drawing on uploaded material when relevant. */
+    public List<Flashcard> generateFlashcards(String topic) throws IOException, InterruptedException {
+        if (topic == null || topic.isBlank()) {
+            throw new IllegalArgumentException("Please give a flashcard topic, e.g. flashcard recursion");
+        }
+
+        Prompt prompt = Prompt.builder()
+                .topic(topic)
+                .context(relevantContext(topic))
+                .format(LearningActivityFactory.FLASHCARD_FORMAT)
+                .build();
+
+        return LearningActivityFactory.createFlashcard(topic.trim(), llm.ask(prompt));
+    }
+
+    /**
+     * F04 - Spaced repetition: picks the next card to review, or null once every card
+     * has been answered correctly. Unlearned cards come first, weakest (lowest
+     * mastery score) first, and the card just shown is not repeated straight away.
+     */
+    public Flashcard nextFlashcard(List<Flashcard> deck, Flashcard previous) {
+        Flashcard next = null;
+        for (Flashcard card : deck) {
+            if (card.isLearned() || (card == previous && countUnlearned(deck) > 1)) {
+                continue;
+            }
+            if (next == null || card.masteryScore() < next.masteryScore()) {
+                next = card;
+            }
+        }
+        return next;
+    }
+
+    private static int countUnlearned(List<Flashcard> deck) {
+        int count = 0;
+        for (Flashcard card : deck) {
+            if (!card.isLearned()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     /** The best-matching uploaded chunks joined into one context block, or null if none match. */
     private String relevantContext(String query) {
         List<String> relevant = ragEngine.retrieve(query);

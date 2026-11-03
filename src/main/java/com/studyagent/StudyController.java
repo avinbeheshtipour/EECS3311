@@ -63,6 +63,54 @@ public class StudyController {
         return Response.ok(result.toString());
     }
 
+    /** F04 - Generates a deck of flashcards on the topic. */
+    public FlashcardResponse generateFlashcards(String topic) {
+        if (topic == null || topic.isBlank()) {
+            return FlashcardResponse.error("Please give a flashcard topic, e.g. flashcard recursion");
+        }
+        try {
+            return FlashcardResponse.ok(topic.trim(), service.generateFlashcards(topic.trim()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return FlashcardResponse.error("The request was interrupted.");
+        } catch (IllegalArgumentException | IOException e) {
+            return FlashcardResponse.error("Could not generate flashcards: " + e.getMessage());
+        }
+    }
+
+    /** The next card to review, or null when every card has been answered correctly. */
+    public Flashcard nextFlashcard(List<Flashcard> deck, Flashcard previous) {
+        return service.nextFlashcard(deck, previous);
+    }
+
+    public void recordFlashcardAnswer(Flashcard card, boolean correct) {
+        card.recordAnswer(correct);
+    }
+
+    /** End-of-session summary, listing the cards that took more than one try. */
+    public Response flashcardSummary(List<Flashcard> deck) {
+        int reviews = 0;
+        int learned = 0;
+        StringBuilder practice = new StringBuilder();
+        for (Flashcard card : deck) {
+            reviews += card.timesSeen();
+            if (card.isLearned()) {
+                learned++;
+            }
+            if (card.timesSeen() > card.timesCorrect()) {
+                practice.append("\n  ").append(card.front()).append(" (")
+                        .append(card.timesCorrect()).append('/').append(card.timesSeen()).append(" correct)");
+            }
+        }
+
+        StringBuilder summary = new StringBuilder("Learned " + learned + "/" + deck.size()
+                + " cards in " + reviews + (reviews == 1 ? " review." : " reviews."));
+        if (practice.length() > 0) {
+            summary.append("\nWorth more practice:").append(practice);
+        }
+        return Response.ok(summary.toString());
+    }
+
     /** Indexes study material typed or pasted directly into the view. */
     public Response addMaterial(String text) {
         if (text == null || text.isBlank()) {
@@ -122,6 +170,19 @@ public class StudyController {
 
         public static QuizResponse error(String message) {
             return new QuizResponse(false, message, null);
+        }
+    }
+
+    /** The outcome of a flashcard request: the deck on success, or an error message to show. */
+    public record FlashcardResponse(boolean success, String message, List<Flashcard> cards) {
+
+        public static FlashcardResponse ok(String topic, List<Flashcard> cards) {
+            return new FlashcardResponse(true, "Generated " + cards.size()
+                    + (cards.size() == 1 ? " flashcard" : " flashcards") + " on " + topic + ".", cards);
+        }
+
+        public static FlashcardResponse error(String message) {
+            return new FlashcardResponse(false, message, null);
         }
     }
 }
