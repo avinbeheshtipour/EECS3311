@@ -67,7 +67,7 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 | `flashcard <topic>` | Review 10 flashcards; cards you miss come back until you get them right | Available |
 | `plan <topic> <days>` | Break a topic into day-by-day milestones, e.g. `plan recursion 7` | Available |
 | `summarize <file>` | Summarize a PDF or TXT file: each ~200-word chunk in 3 bullet points, then merged into one summary | Available |
-| `progress` | Show your study progress | Planned |
+| `progress` | Show your quiz scores and flashcard accuracy for this session | Available |
 | `export` | Export your study material | Planned |
 | `recommend` | Recommend what to study next | Planned |
 | `graph <topic>` | Show how the concepts in a topic connect (as an adjacency list) | Available |

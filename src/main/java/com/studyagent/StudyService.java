@@ -19,6 +19,7 @@ public class StudyService {
     private final KnowledgeGraph knowledgeGraph;
     private final SummarizationService summarizationService;
     private final ConversationMemory memory = new ConversationMemory();
+    private final ProgressRepository progress = new ProgressRepository();
 
     public StudyService() {
         this(new RAGEngine(), new LLMFacade());
@@ -63,6 +64,27 @@ public class StudyService {
         String answer = llm.ask(prompt);
         memory.add(input.trim(), answer);
         return answer;
+    }
+
+    /** F07 - Records a graded quiz. */
+    public void saveQuizResult(Quiz quiz) {
+        progress.saveQuizResult(quiz.topic(), quiz.userScore());
+    }
+
+    /** F07 - Records a flashcard session; sessions where no card was reviewed are ignored. */
+    public void saveFlashcardResult(String topic, List<Flashcard> deck) {
+        int correct = 0;
+        int total = 0;
+        for (Flashcard card : deck) {
+            correct += card.timesCorrect();
+            total += card.timesSeen();
+        }
+        progress.saveFlashcardResult(topic, correct, total);
+    }
+
+    /** F07 - All past quiz scores and flashcard results as display text. */
+    public String getProgressSummary() {
+        return progress.getProgressSummary();
     }
 
     /** F12 - Every question asked this session with its answer, oldest first. */

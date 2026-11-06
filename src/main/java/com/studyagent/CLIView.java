@@ -24,6 +24,7 @@ public class CLIView {
               flashcard <topic>    Review 10 flashcards; missed cards come back until you get them
               plan <topic> <days>  Get a day-by-day study plan, e.g. plan recursion 7
               graph <topic>        Show how the concepts in a topic connect
+              progress             Show your quiz scores and flashcard accuracy
               history              Show the questions you've asked this session
               /help                Show this help
               /quit                Exit
@@ -105,6 +106,8 @@ public class CLIView {
             showGraph(argument(line));
         } else if (line.equalsIgnoreCase("history") || line.equals("/history")) {
             showHistory();
+        } else if (line.equalsIgnoreCase("progress") || line.equals("/progress")) {
+            show(controller.progress());
         } else if (line.startsWith("/")) {
             out.println("Unknown command. Type /help to see the commands.");
         } else {
@@ -171,7 +174,7 @@ public class CLIView {
             }
             controller.recordFlashcardAnswer(card, correct);
         }
-        show(controller.flashcardSummary(deck));
+        show(controller.finishFlashcards(topic, deck));
     }
 
     /** Handles "plan <topic> <days>": the last word is the number of days, the rest is the topic. */

@@ -49,9 +49,10 @@ public class StudyController {
         }
     }
 
-    /** Grades the answers (option letters, in question order) and reports the score with corrections. */
+    /** Grades and records the answers (option letters, in question order); reports the score with corrections. */
     public Response submitQuiz(Quiz quiz, List<String> answers) {
         int score = quiz.grade(answers);
+        service.saveQuizResult(quiz);
         StringBuilder result = new StringBuilder("You scored " + score + "/" + quiz.size() + ".");
         for (int i = 0; i < quiz.size(); i++) {
             String given = i < answers.size() ? answers.get(i) : null;
@@ -109,6 +110,11 @@ public class StudyController {
         }
     }
 
+    /** F07 - Past quiz scores and flashcard accuracy. */
+    public Response progress() {
+        return Response.ok(service.getProgressSummary());
+    }
+
     /** F12 - The questions asked this session with their answers, oldest first. */
     public List<ConversationMemory.Exchange> history() {
         return service.getHistory();
@@ -123,8 +129,9 @@ public class StudyController {
         card.recordAnswer(correct);
     }
 
-    /** End-of-session summary, listing the cards that took more than one try. */
-    public Response flashcardSummary(List<Flashcard> deck) {
+    /** Ends a review session: records the result and returns a summary listing the cards that took more than one try. */
+    public Response finishFlashcards(String topic, List<Flashcard> deck) {
+        service.saveFlashcardResult(topic, deck);
         int reviews = 0;
         int learned = 0;
         StringBuilder practice = new StringBuilder();

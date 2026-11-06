@@ -22,6 +22,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,9 @@ public class MainGUI {
     private final JButton summarizeButton = new JButton("Summarize a file...");
     private final JTextArea summaryArea = new JTextArea();
 
+    // Progress tab
+    private final JTextArea progressArea = new JTextArea();
+
     public MainGUI(StudyController controller) {
         this.controller = controller;
 
@@ -62,6 +66,13 @@ public class MainGUI {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Quiz", buildQuizTab());
         tabs.addTab("Summarize", buildSummarizeTab());
+        tabs.addTab("Progress", buildProgressTab());
+        // Refresh whenever the Progress tab is opened, so it includes quizzes taken since.
+        tabs.addChangeListener(e -> {
+            if ("Progress".equals(tabs.getTitleAt(tabs.getSelectedIndex()))) {
+                refreshProgress();
+            }
+        });
 
         statusLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
@@ -139,6 +150,27 @@ public class MainGUI {
         tab.add(buttonRow, BorderLayout.NORTH);
         tab.add(new JScrollPane(summaryArea), BorderLayout.CENTER);
         return tab;
+    }
+
+    private JPanel buildProgressTab() {
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> refreshProgress());
+        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonRow.add(refreshButton);
+
+        progressArea.setEditable(false);
+        progressArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        progressArea.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JPanel tab = new JPanel(new BorderLayout());
+        tab.add(buttonRow, BorderLayout.NORTH);
+        tab.add(new JScrollPane(progressArea), BorderLayout.CENTER);
+        return tab;
+    }
+
+    private void refreshProgress() {
+        progressArea.setText(controller.progress().message());
+        progressArea.setCaretPosition(0);
     }
 
     private void chooseAndSummarize() {
