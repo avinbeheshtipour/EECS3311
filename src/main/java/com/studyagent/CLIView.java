@@ -18,16 +18,17 @@ public class CLIView {
     private static final String HELP = """
             Type a question and press Enter to ask it.
             Commands:
-              upload <file>        Add a PDF or TXT file of course material for answers to draw on
-              summarize <file>     Summarize a PDF or TXT file
-              quiz <topic>        Take a 5-question multiple-choice quiz
-              flashcard <topic>    Review 10 flashcards; missed cards come back until you get them
-              plan <topic> <days>  Get a day-by-day study plan, e.g. plan recursion 7
-              graph <topic>        Show how the concepts in a topic connect
-              progress             Show your quiz scores and flashcard accuracy
-              history              Show the questions you've asked this session
-              /help                Show this help
-              /quit                Exit
+              upload <file>           Add a PDF or TXT file of course material for answers to draw on
+              summarize <file>        Summarize a PDF or TXT file
+              quiz <topic>            Take a 5-question multiple-choice quiz
+              flashcard <topic>       Review 10 flashcards; missed cards come back until you get them
+              plan <topic> <days>     Get a day-by-day study plan, e.g. plan recursion 7
+              graph <topic>           Show how the concepts in a topic connect
+              progress                Show your quiz scores and flashcard accuracy
+              export [md|pdf] [file]  Save your latest study plan or progress summary
+              history                 Show the questions you've asked this session
+              /help                   Show this help
+              /quit                   Exit
             """;
 
     private final StudyController controller;
@@ -108,6 +109,8 @@ public class CLIView {
             showHistory();
         } else if (line.equalsIgnoreCase("progress") || line.equals("/progress")) {
             show(controller.progress());
+        } else if (isExportCommand(line)) {
+            export(argument(line));
         } else if (line.startsWith("/")) {
             out.println("Unknown command. Type /help to see the commands.");
         } else {
@@ -266,6 +269,36 @@ public class CLIView {
             }
             out.println("Please enter A, B, C or D (or press Enter to skip).");
         }
+    }
+
+    /**
+     * Handles "export [md|pdf] [file]". A lone file name ending in .md or .pdf also
+     * sets the format, e.g. "export plan.pdf".
+     */
+    private void export(String arguments) {
+        String[] parts = arguments.split("\\s+", 2);
+        String lower = arguments.toLowerCase(Locale.ROOT);
+        if (arguments.isEmpty()) {
+            show(controller.export("md", ""));
+        } else if (parts[0].matches("(?i)md|markdown|pdf")) {
+            show(controller.export(parts[0], parts.length > 1 ? parts[1] : ""));
+        } else if (lower.endsWith(".pdf") || lower.endsWith(".md")) {
+            show(controller.export(lower.endsWith(".pdf") ? "pdf" : "md", arguments));
+        } else {
+            show(controller.export(parts[0], parts.length > 1 ? parts[1] : ""));
+        }
+    }
+
+    /**
+     * Matches "/export ..." always, but bare "export" only on its own, with a single
+     * word, or followed by md/pdf, so a question such as "export controls in the US?"
+     * is still asked.
+     */
+    private static boolean isExportCommand(String line) {
+        if (line.equals("/export") || line.startsWith("/export ")) {
+            return true;
+        }
+        return line.matches("(?i)export(\\s+\\S+|\\s+(md|markdown|pdf)\\s+.*)?");
     }
 
     /** Prints a "working..." message, unless the command is missing its argument and will just show an error. */

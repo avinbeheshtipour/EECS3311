@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -113,6 +114,34 @@ public class StudyController {
     /** F07 - Past quiz scores and flashcard accuracy. */
     public Response progress() {
         return Response.ok(service.getProgressSummary());
+    }
+
+    /**
+     * F08 - Exports the most recent study plan or progress summary.
+     *
+     * @param format   "pdf", or "md"/"markdown" (the default when null or blank)
+     * @param filename where to write; null or blank picks a name based on the content
+     */
+    public Response export(String format, String filename) {
+        String fmt = format == null || format.isBlank() ? "md" : format.trim().toLowerCase(Locale.ROOT);
+        if (!fmt.equals("pdf") && !fmt.equals("md") && !fmt.equals("markdown")) {
+            return Response.error("Unknown format \"" + format.trim() + "\". Use md or pdf.");
+        }
+        String description = service.lastExportableDescription();
+        try {
+            Path file = service.exportLast(fmt.equals("pdf"), filename);
+            return Response.ok("Exported " + description + " to " + file);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            // IllegalArgumentException also covers InvalidPathException for a malformed file name.
+            return Response.error(e.getMessage());
+        } catch (IOException e) {
+            return Response.error("Could not export: " + e.getMessage());
+        }
+    }
+
+    /** F08 - What export would currently write, e.g. "study plan for recursion", or null if nothing yet. */
+    public String exportableDescription() {
+        return service.lastExportableDescription();
     }
 
     /** F12 - The questions asked this session with their answers, oldest first. */

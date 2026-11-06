@@ -26,6 +26,7 @@ import java.awt.Font;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -37,6 +38,7 @@ public class MainGUI {
     private final JFrame frame = new JFrame("AI Study Agent");
     private final StudyController controller;
     private final JButton uploadButton = new JButton("Upload");
+    private final JButton exportButton = new JButton("Export");
     private final JLabel statusLabel = new JLabel("Upload a PDF or TXT file of course material.");
 
     // Quiz tab
@@ -59,9 +61,12 @@ public class MainGUI {
         this.controller = controller;
 
         uploadButton.addActionListener(e -> chooseAndUpload());
+        exportButton.addActionListener(e -> chooseAndExport());
+        exportButton.setToolTipText("Save your latest study plan or progress summary as Markdown or PDF");
 
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         toolbar.add(uploadButton);
+        toolbar.add(exportButton);
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Quiz", buildQuizTab());
@@ -305,6 +310,38 @@ public class MainGUI {
         }
         quizResultArea.setText(controller.submitQuiz(currentQuiz, answers).message());
         submitQuizButton.setEnabled(false);
+    }
+
+    /** Saves the latest study plan or progress summary; the chosen file type decides Markdown or PDF. */
+    private void chooseAndExport() {
+        String description = controller.exportableDescription();
+        if (description == null) {
+            JOptionPane.showMessageDialog(frame,
+                    "Nothing to export yet. Open the Progress tab or generate a study plan first.",
+                    "Export", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        FileNameExtensionFilter markdown = new FileNameExtensionFilter("Markdown (*.md)", "md");
+        FileNameExtensionFilter pdf = new FileNameExtensionFilter("PDF (*.pdf)", "pdf");
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Export " + description);
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.addChoosableFileFilter(markdown);
+        chooser.addChoosableFileFilter(pdf);
+        chooser.setFileFilter(markdown);
+        if (chooser.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        String path = chooser.getSelectedFile().getPath();
+        boolean asPdf = path.toLowerCase(Locale.ROOT).endsWith(".pdf")
+                || (chooser.getFileFilter() == pdf && !path.toLowerCase(Locale.ROOT).endsWith(".md"));
+        StudyController.Response response = controller.export(asPdf ? "pdf" : "md", path);
+        statusLabel.setText(response.message());
+        if (!response.success()) {
+            JOptionPane.showMessageDialog(frame, response.message(), "Export failed", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void chooseAndUpload() {
