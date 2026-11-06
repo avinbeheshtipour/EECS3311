@@ -34,17 +34,27 @@ public class KnowledgeRepository {
      * @throws IOException if the file cannot be read or contains no text
      */
     public List<Chunk> upload(Path file) throws IOException {
+        List<Chunk> fileChunks = readChunks(file);
+        for (Chunk chunk : fileChunks) {
+            ragEngine.index(chunk);
+        }
+        chunks.addAll(fileChunks);
+        return fileChunks;
+    }
+
+    /**
+     * Parses the file into chunks without indexing them.
+     *
+     * @throws IllegalArgumentException if the file is not a .pdf or .txt
+     * @throws IOException if the file cannot be read or contains no text
+     */
+    public List<Chunk> readChunks(Path file) throws IOException {
         String source = file.getFileName().toString();
         List<Chunk> fileChunks = split(readText(file), source);
         if (fileChunks.isEmpty()) {
             throw new IOException(source + " contains no readable text"
                     + (isPdf(source) ? " (scanned PDFs are not supported)." : "."));
         }
-
-        for (Chunk chunk : fileChunks) {
-            ragEngine.index(chunk);
-        }
-        chunks.addAll(fileChunks);
         return fileChunks;
     }
 

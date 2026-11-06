@@ -19,7 +19,8 @@ public class CLIView {
             Type a question and press Enter to ask it.
             Commands:
               upload <file>        Add a PDF or TXT file of course material for answers to draw on
-              quiz <topic>         Take a 5-question multiple-choice quiz
+              summarize <file>     Summarize a PDF or TXT file
+              quiz <topic>        Take a 5-question multiple-choice quiz
               flashcard <topic>    Review 10 flashcards; missed cards come back until you get them
               plan <topic> <days>  Get a day-by-day study plan, e.g. plan recursion 7
               graph <topic>        Show how the concepts in a topic connect
@@ -84,9 +85,16 @@ public class CLIView {
 
         if (line.equals("/help")) {
             out.println(HELP);
-        } else if (isUploadCommand(line)) {
-            out.println("Uploading...");
+        } else if (isFileCommand(line, "upload")) {
+            printIfArgument(line, "Uploading...");
             show(controller.uploadFile(argument(line)));
+        } else if (isFileCommand(line, "summarize")) {
+            printIfArgument(line, "Summarizing...");
+            show(controller.summarizeFile(argument(line), (done, total) -> {
+                if (total > 1) {
+                    out.println("  section " + done + " of " + total + " done");
+                }
+            }));
         } else if (command.equals("quiz") || command.equals("/quiz")) {
             runQuiz(argument(line));
         } else if (command.matches("/?flashcards?")) {
@@ -257,6 +265,13 @@ public class CLIView {
         }
     }
 
+    /** Prints a "working..." message, unless the command is missing its argument and will just show an error. */
+    private void printIfArgument(String line, String message) {
+        if (!argument(line).isEmpty()) {
+            out.println(message);
+        }
+    }
+
     /** Everything after the command word, e.g. "recursion" from "quiz recursion". */
     private static String argument(String line) {
         int space = line.indexOf(' ');
@@ -264,17 +279,18 @@ public class CLIView {
     }
 
     /**
-     * Matches "/upload ..." always, but "upload ..." only when it ends in a file
-     * extension, so a question such as "upload speed vs download speed?" is still asked.
+     * Matches "/name ..." always, but "name ..." only when it ends in a file extension,
+     * so questions such as "upload speed vs download speed?" or "summarize the French
+     * Revolution" are still asked.
      */
-    private static boolean isUploadCommand(String line) {
-        if (line.equals("/upload") || line.startsWith("/upload ")) {
+    private static boolean isFileCommand(String line, String name) {
+        if (line.equals("/" + name) || line.startsWith("/" + name + " ")) {
             return true;
         }
-        if (!line.toLowerCase(Locale.ROOT).startsWith("upload ")) {
+        if (!line.toLowerCase(Locale.ROOT).startsWith(name + " ")) {
             return false;
         }
-        String arg = line.substring("upload ".length()).trim().replaceAll("^[\"']|[\"']$", "");
+        String arg = line.substring(name.length() + 1).trim().replaceAll("^[\"']|[\"']$", "");
         return arg.matches(".*\\.[A-Za-z0-9]{1,5}");
     }
 

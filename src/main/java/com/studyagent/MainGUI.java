@@ -47,6 +47,10 @@ public class MainGUI {
     private final List<ButtonGroup> quizAnswerGroups = new ArrayList<>();
     private Quiz currentQuiz;
 
+    // Summarize tab
+    private final JButton summarizeButton = new JButton("Summarize a file...");
+    private final JTextArea summaryArea = new JTextArea();
+
     public MainGUI(StudyController controller) {
         this.controller = controller;
 
@@ -57,6 +61,7 @@ public class MainGUI {
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Quiz", buildQuizTab());
+        tabs.addTab("Summarize", buildSummarizeTab());
 
         statusLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
@@ -118,6 +123,72 @@ public class MainGUI {
             }
             new MainGUI(controller).show();
         });
+    }
+
+    private JPanel buildSummarizeTab() {
+        summarizeButton.addActionListener(e -> chooseAndSummarize());
+        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonRow.add(summarizeButton);
+
+        summaryArea.setEditable(false);
+        summaryArea.setLineWrap(true);
+        summaryArea.setWrapStyleWord(true);
+        summaryArea.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JPanel tab = new JPanel(new BorderLayout());
+        tab.add(buttonRow, BorderLayout.NORTH);
+        tab.add(new JScrollPane(summaryArea), BorderLayout.CENTER);
+        return tab;
+    }
+
+    private void chooseAndSummarize() {
+        File file = chooseCourseFile();
+        if (file == null) {
+            return;
+        }
+
+        summarizeButton.setEnabled(false);
+        summaryArea.setText("");
+        statusLabel.setText("Summarizing " + file.getName() + "...");
+
+        new SwingWorker<StudyController.Response, String>() {
+            @Override
+            protected StudyController.Response doInBackground() {
+                return controller.summarizeFile(file.getPath(), (done, total) ->
+                        publish("Summarizing " + file.getName() + ": section " + done + " of " + total + " done..."));
+            }
+
+            @Override
+            protected void process(List<String> updates) {
+                statusLabel.setText(updates.get(updates.size() - 1));
+            }
+
+            @Override
+            protected void done() {
+                summarizeButton.setEnabled(true);
+                try {
+                    StudyController.Response response = get();
+                    if (response.success()) {
+                        summaryArea.setText(response.message());
+                        summaryArea.setCaretPosition(0);
+                        statusLabel.setText("Summarized " + file.getName() + ".");
+                    } else {
+                        statusLabel.setText(response.message());
+                        JOptionPane.showMessageDialog(frame, response.message(),
+                                "Summary failed", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    statusLabel.setText("Summary failed: " + e.getMessage());
+                }
+            }
+        }.execute();
+    }
+
+    /** Asks the user to pick a PDF or TXT file; returns null if they cancel. */
+    private File chooseCourseFile() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new FileNameExtensionFilter("PDF or text files", "pdf", "txt"));
+        return chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION ? chooser.getSelectedFile() : null;
     }
 
     private void generateQuiz() {
@@ -205,12 +276,10 @@ public class MainGUI {
     }
 
     private void chooseAndUpload() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new FileNameExtensionFilter("PDF or text files", "pdf", "txt"));
-        if (chooser.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION) {
+        File file = chooseCourseFile();
+        if (file == null) {
             return;
         }
-        File file = chooser.getSelectedFile();
 
         uploadButton.setEnabled(false);
         statusLabel.setText("Uploading " + file.getName() + "...");

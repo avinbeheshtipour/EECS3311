@@ -163,7 +163,7 @@ public class StudyController {
         }
         Path file;
         try {
-            file = Path.of(stripQuotes(path.trim()));
+            file = parsePath(path);
         } catch (InvalidPathException e) {
             return Response.error("Invalid file path: " + path.trim());
         }
@@ -176,13 +176,36 @@ public class StudyController {
         }
     }
 
-    /** Terminals often wrap dragged-in paths containing spaces in quotes. */
-    private static String stripQuotes(String path) {
-        if (path.length() >= 2 && (path.startsWith("\"") && path.endsWith("\"")
-                || path.startsWith("'") && path.endsWith("'"))) {
-            return path.substring(1, path.length() - 1);
+    /** F06 - Summarizes a PDF or TXT file; the listener is told as each section finishes. */
+    public Response summarizeFile(String path, SummarizationService.ProgressListener progress) {
+        if (path == null || path.isBlank()) {
+            return Response.error("Please give a file path, e.g. summarize notes.pdf");
         }
-        return path;
+        Path file;
+        try {
+            file = parsePath(path);
+        } catch (InvalidPathException e) {
+            return Response.error("Invalid file path: " + path.trim());
+        }
+        try {
+            SummarizationService.DocumentSummary summary = service.summarize(file, progress);
+            return Response.ok("Summary of " + summary.source() + ":\n\n" + summary.text());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Response.error("The request was interrupted.");
+        } catch (IllegalArgumentException | IOException e) {
+            return Response.error("Could not summarize " + file.getFileName() + ": " + e.getMessage());
+        }
+    }
+
+    /** Terminals often wrap dragged-in paths containing spaces in quotes. */
+    private static Path parsePath(String path) {
+        String trimmed = path.trim();
+        if (trimmed.length() >= 2 && (trimmed.startsWith("\"") && trimmed.endsWith("\"")
+                || trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+            trimmed = trimmed.substring(1, trimmed.length() - 1);
+        }
+        return Path.of(trimmed);
     }
 
     /** The outcome of a request: either a message to show, or an error to show. */

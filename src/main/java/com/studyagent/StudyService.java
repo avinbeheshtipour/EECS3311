@@ -17,6 +17,7 @@ public class StudyService {
     private final KnowledgeRepository knowledgeRepository;
     private final LLMFacade llm;
     private final KnowledgeGraph knowledgeGraph;
+    private final SummarizationService summarizationService;
     private final ConversationMemory memory = new ConversationMemory();
 
     public StudyService() {
@@ -28,6 +29,7 @@ public class StudyService {
         this.knowledgeRepository = new KnowledgeRepository(ragEngine);
         this.llm = llm;
         this.knowledgeGraph = new KnowledgeGraph(llm);
+        this.summarizationService = new SummarizationService(knowledgeRepository, llm);
     }
 
     /** Indexes notes, slides or readings so later questions can draw on them. */
@@ -38,6 +40,12 @@ public class StudyService {
     /** F02 - Parses a PDF or TXT file into chunks and indexes them; returns the new chunks. */
     public List<Chunk> uploadFile(Path file) throws IOException {
         return knowledgeRepository.upload(file);
+    }
+
+    /** F06 - Summarizes a PDF or TXT file chunk by chunk; the file is not added to the knowledge base. */
+    public SummarizationService.DocumentSummary summarize(Path file, SummarizationService.ProgressListener progress)
+            throws IOException, InterruptedException {
+        return summarizationService.summarize(file, progress);
     }
 
     public String askQuestion(String input) throws IOException, InterruptedException {
