@@ -25,6 +25,7 @@ public class CLIView {
               plan <topic> <days>     Get a day-by-day study plan, e.g. plan recursion 7
               graph <topic>           Show how the concepts in a topic connect
               progress                Show your quiz scores and flashcard accuracy
+              recommend               Get a study suggestion for your weakest topic
               export [md|pdf] [file]  Save your latest study plan or progress summary
               history                 Show the questions you've asked this session
               /help                   Show this help
@@ -109,6 +110,9 @@ public class CLIView {
             showHistory();
         } else if (line.equalsIgnoreCase("progress") || line.equals("/progress")) {
             show(controller.progress());
+        } else if (line.equalsIgnoreCase("recommend") || line.equals("/recommend")) {
+            out.println("Thinking...");
+            show(controller.recommend());
         } else if (isExportCommand(line)) {
             export(argument(line));
         } else if (line.startsWith("/")) {

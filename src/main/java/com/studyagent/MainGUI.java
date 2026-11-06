@@ -57,6 +57,10 @@ public class MainGUI {
     // Progress tab
     private final JTextArea progressArea = new JTextArea();
 
+    // Recommend tab
+    private final JButton recommendButton = new JButton("Get recommendation");
+    private final JTextArea recommendationArea = new JTextArea();
+
     public MainGUI(StudyController controller) {
         this.controller = controller;
 
@@ -72,6 +76,7 @@ public class MainGUI {
         tabs.addTab("Quiz", buildQuizTab());
         tabs.addTab("Summarize", buildSummarizeTab());
         tabs.addTab("Progress", buildProgressTab());
+        tabs.addTab("Recommend", buildRecommendTab());
         // Refresh whenever the Progress tab is opened, so it includes quizzes taken since.
         tabs.addChangeListener(e -> {
             if ("Progress".equals(tabs.getTitleAt(tabs.getSelectedIndex()))) {
@@ -171,6 +176,49 @@ public class MainGUI {
         tab.add(buttonRow, BorderLayout.NORTH);
         tab.add(new JScrollPane(progressArea), BorderLayout.CENTER);
         return tab;
+    }
+
+    private JPanel buildRecommendTab() {
+        recommendButton.addActionListener(e -> recommend());
+        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonRow.add(recommendButton);
+        buttonRow.add(new JLabel("Based on your quiz scores and flashcard accuracy this session."));
+
+        recommendationArea.setEditable(false);
+        recommendationArea.setLineWrap(true);
+        recommendationArea.setWrapStyleWord(true);
+        recommendationArea.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JPanel tab = new JPanel(new BorderLayout());
+        tab.add(buttonRow, BorderLayout.NORTH);
+        tab.add(new JScrollPane(recommendationArea), BorderLayout.CENTER);
+        return tab;
+    }
+
+    private void recommend() {
+        recommendButton.setEnabled(false);
+        recommendationArea.setText("");
+        statusLabel.setText("Finding your weakest topic...");
+
+        new SwingWorker<StudyController.Response, Void>() {
+            @Override
+            protected StudyController.Response doInBackground() {
+                return controller.recommend();
+            }
+
+            @Override
+            protected void done() {
+                recommendButton.setEnabled(true);
+                try {
+                    StudyController.Response response = get();
+                    recommendationArea.setText(response.message());
+                    recommendationArea.setCaretPosition(0);
+                    statusLabel.setText(response.success() ? "Recommendation ready." : response.message());
+                } catch (InterruptedException | ExecutionException e) {
+                    statusLabel.setText("Recommendation failed: " + e.getMessage());
+                }
+            }
+        }.execute();
     }
 
     private void refreshProgress() {

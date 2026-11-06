@@ -23,6 +23,7 @@ public class StudyService {
     private final ConversationMemory memory = new ConversationMemory();
     private final ProgressRepository progress = new ProgressRepository();
     private final ExportService exportService = new ExportService();
+    private final RecommendationService recommendationService;
     private Exportable lastExportable;
 
     public StudyService() {
@@ -35,6 +36,7 @@ public class StudyService {
         this.llm = llm;
         this.knowledgeGraph = new KnowledgeGraph(llm);
         this.summarizationService = new SummarizationService(knowledgeRepository, llm);
+        this.recommendationService = new RecommendationService(progress, llm);
     }
 
     /** Indexes notes, slides or readings so later questions can draw on them. */
@@ -91,6 +93,15 @@ public class StudyService {
         String summary = progress.getProgressSummary();
         lastExportable = progressAsMarkdown(summary);
         return summary;
+    }
+
+    /**
+     * F09 - Suggests how to study the topic with the weakest quiz and flashcard results.
+     *
+     * @throws IllegalStateException if there are no results yet
+     */
+    public String getRecommendation() throws IOException, InterruptedException {
+        return recommendationService.recommend();
     }
 
     /** F12 - Every question asked this session with its answer, oldest first. */

@@ -69,7 +69,7 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 | `summarize <file>` | Summarize a PDF or TXT file: each ~200-word chunk in 3 bullet points, then merged into one summary | Available |
 | `progress` | Show your quiz scores and flashcard accuracy for this session | Available |
 | `export [md\|pdf] [file]` | Save your latest study plan or progress summary as Markdown (default) or PDF | Available |
-| `recommend` | Recommend what to study next | Planned |
+| `recommend` | Find your weakest topic from quiz and flashcard results and get a focused study approach | Available |
 | `graph <topic>` | Show how the concepts in a topic connect (as an adjacency list) | Available |
 | `history` | Show the questions you've asked this session and their answers | Available |
 | `quit` | Exit the program | Available as `/quit` |

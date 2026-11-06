@@ -116,6 +116,20 @@ public class StudyController {
         return Response.ok(service.getProgressSummary());
     }
 
+    /** F09 - A study suggestion for the weakest topic so far. */
+    public Response recommend() {
+        try {
+            return Response.ok(service.getRecommendation());
+        } catch (IllegalStateException e) {
+            return Response.error(e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Response.error("The request was interrupted.");
+        } catch (IOException e) {
+            return Response.error("Could not get a recommendation: " + e.getMessage());
+        }
+    }
+
     /**
      * F08 - Exports the most recent study plan or progress summary.
      *
