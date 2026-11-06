@@ -208,34 +208,34 @@ public class StudyController {
 
     /** F02 - Uploads a PDF or TXT file into the knowledge base. */
     public Response uploadFile(String path) {
-        if (path == null || path.isBlank()) {
-            return Response.error("Please give a file path, e.g. upload notes.pdf");
-        }
         Path file;
         try {
             file = parsePath(path);
         } catch (InvalidPathException e) {
             return Response.error("Invalid file path: " + path.trim());
         }
+        if (file == null) {
+            return Response.error("Please give a file path, e.g. upload notes.pdf");
+        }
         try {
             int count = service.uploadFile(file).size();
-            return Response.ok("Uploaded " + file.getFileName() + " (" + count
+            return Response.ok("Uploaded " + displayName(file) + " (" + count
                     + (count == 1 ? " chunk" : " chunks") + ").");
         } catch (IllegalArgumentException | IOException e) {
-            return Response.error("Could not upload " + file.getFileName() + ": " + e.getMessage());
+            return Response.error("Could not upload " + displayName(file) + ": " + e.getMessage());
         }
     }
 
     /** F06 - Summarizes a PDF or TXT file; the listener is told as each section finishes. */
     public Response summarizeFile(String path, SummarizationService.ProgressListener progress) {
-        if (path == null || path.isBlank()) {
-            return Response.error("Please give a file path, e.g. summarize notes.pdf");
-        }
         Path file;
         try {
             file = parsePath(path);
         } catch (InvalidPathException e) {
             return Response.error("Invalid file path: " + path.trim());
+        }
+        if (file == null) {
+            return Response.error("Please give a file path, e.g. summarize notes.pdf");
         }
         try {
             SummarizationService.DocumentSummary summary = service.summarize(file, progress);
@@ -244,18 +244,26 @@ public class StudyController {
             Thread.currentThread().interrupt();
             return Response.error("The request was interrupted.");
         } catch (IllegalArgumentException | IOException e) {
-            return Response.error("Could not summarize " + file.getFileName() + ": " + e.getMessage());
+            return Response.error("Could not summarize " + displayName(file) + ": " + e.getMessage());
         }
     }
 
-    /** Terminals often wrap dragged-in paths containing spaces in quotes. */
+    /**
+     * Turns user input into a path, or null if no path was given. Strips the quotes
+     * terminals often add around dragged-in paths containing spaces.
+     */
     private static Path parsePath(String path) {
-        String trimmed = path.trim();
+        String trimmed = path == null ? "" : path.trim();
         if (trimmed.length() >= 2 && (trimmed.startsWith("\"") && trimmed.endsWith("\"")
                 || trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-            trimmed = trimmed.substring(1, trimmed.length() - 1);
+            trimmed = trimmed.substring(1, trimmed.length() - 1).trim();
         }
-        return Path.of(trimmed);
+        return trimmed.isEmpty() ? null : Path.of(trimmed);
+    }
+
+    /** The file's name for messages; the whole path for ones like "/" that have no name part. */
+    private static String displayName(Path file) {
+        return file.getFileName() == null ? file.toString() : file.getFileName().toString();
     }
 
     /** The outcome of a request: either a message to show, or an error to show. */

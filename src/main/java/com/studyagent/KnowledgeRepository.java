@@ -2,6 +2,7 @@ package com.studyagent;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.io.IOException;
@@ -49,8 +50,9 @@ public class KnowledgeRepository {
      * @throws IOException if the file cannot be read or contains no text
      */
     public List<Chunk> readChunks(Path file) throws IOException {
+        String text = readText(file);
         String source = file.getFileName().toString();
-        List<Chunk> fileChunks = split(readText(file), source);
+        List<Chunk> fileChunks = split(text, source);
         if (fileChunks.isEmpty()) {
             throw new IOException(source + " contains no readable text"
                     + (isPdf(source) ? " (scanned PDFs are not supported)." : "."));
@@ -63,14 +65,24 @@ public class KnowledgeRepository {
     }
 
     String readText(Path file) throws IOException {
+        if (Files.isDirectory(file)) {
+            throw new IOException(file + " is a folder. Choose a PDF or TXT file inside it.");
+        }
         if (!Files.isRegularFile(file)) {
             throw new IOException("File not found: " + file);
+        }
+        if (!Files.isReadable(file)) {
+            throw new IOException("You don't have permission to read " + file + ".");
         }
 
         String name = file.getFileName().toString();
         if (isPdf(name)) {
             try (PDDocument document = Loader.loadPDF(file.toFile())) {
                 return new PDFTextStripper().getText(document);
+            } catch (InvalidPasswordException e) {
+                throw new IOException(name + " is password-protected. Remove the password and try again.", e);
+            } catch (IOException e) {
+                throw new IOException(name + " could not be read as a PDF; it may be damaged or not really a PDF.", e);
             }
         }
         if (name.toLowerCase(Locale.ROOT).endsWith(".txt")) {

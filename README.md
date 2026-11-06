@@ -59,22 +59,27 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 
 ## CLI Commands
 
-| Command | What it does | Status |
-|---|---|---|
-| `ask <question>` | Ask a question; answers draw on any uploaded material | Available (you can also just type the question) |
-| `upload <file>` | Add a PDF or TXT file of course material to the knowledge base | Available |
-| `quiz <topic>` | Take a 5-question multiple-choice quiz, then see your score and corrections | Available |
-| `flashcard <topic>` | Review 10 flashcards; cards you miss come back until you get them right | Available |
-| `plan <topic> <days>` | Break a topic into day-by-day milestones, e.g. `plan recursion 7` | Available |
-| `summarize <file>` | Summarize a PDF or TXT file: each ~200-word chunk in 3 bullet points, then merged into one summary | Available |
-| `progress` | Show your quiz scores and flashcard accuracy for this session | Available |
-| `export [md\|pdf] [file]` | Save your latest study plan or progress summary as Markdown (default) or PDF | Available |
-| `recommend` | Find your weakest topic from quiz and flashcard results and get a focused study approach | Available |
-| `graph <topic>` | Show how the concepts in a topic connect (as an adjacency list) | Available |
-| `history` | Show the questions you've asked this session and their answers | Available |
-| `quit` | Exit the program | Available as `/quit` |
+| Command | What it does |
+|---|---|
+| `ask <question>` | Ask a question; answers draw on any uploaded material (you can also just type the question) |
+| `upload <file>` | Add a PDF or TXT file of course material to the knowledge base |
+| `quiz <topic>` | Take a 5-question multiple-choice quiz, then see your score and corrections |
+| `flashcard <topic>` | Review 10 flashcards; cards you miss come back until you get them right |
+| `plan <topic> <days>` | Break a topic into day-by-day milestones, e.g. `plan recursion 7` |
+| `summarize <file>` | Summarize a PDF or TXT file: each ~200-word chunk in 3 bullet points, then merged into one summary |
+| `progress` | Show your quiz scores and flashcard accuracy for this session |
+| `export [md\|pdf] [file]` | Save your latest study plan or progress summary as Markdown (default) or PDF |
+| `recommend` | Find your weakest topic from quiz and flashcard results and get a focused study approach |
+| `graph <topic>` | Show how the concepts in a topic connect (as an adjacency list) |
+| `history` | Show the questions you've asked this session and their answers |
+| `help` | List all commands |
+| `quit` | Exit the program (`exit` also works) |
 
-`/help` lists the commands available in the current build.
+Every command also works with a leading slash, e.g. `/quiz recursion`. Type `quit` during a quiz or flashcard session to stop it early.
+
+## Desktop Window
+
+The window has a tab for each feature: **Ask**, **Quiz**, **Flashcards**, **Study Plan**, **Summarize**, **Graph**, **Progress**, **Recommend** and **History**. The toolbar's **Upload** button adds course material, and **Export** saves your latest study plan or progress summary as Markdown or PDF.
 
 Example session:
 ```

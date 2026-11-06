@@ -16,8 +16,8 @@ import java.util.Locale;
 public class CLIView {
 
     private static final String HELP = """
-            Type a question and press Enter to ask it.
-            Commands:
+            Type a question and press Enter to ask it, or use one of these commands:
+              ask <question>          Ask a question; answers draw on any uploaded material
               upload <file>           Add a PDF or TXT file of course material for answers to draw on
               summarize <file>        Summarize a PDF or TXT file
               quiz <topic>            Take a 5-question multiple-choice quiz
@@ -28,8 +28,9 @@ public class CLIView {
               recommend               Get a study suggestion for your weakest topic
               export [md|pdf] [file]  Save your latest study plan or progress summary
               history                 Show the questions you've asked this session
-              /help                   Show this help
-              /quit                   Exit
+              help                    Show this list of commands
+              quit                    Exit
+            Every command also works with a leading slash, e.g. /quiz recursion.
             """;
 
     private final StudyController controller;
@@ -72,13 +73,19 @@ public class CLIView {
                 if (line.isEmpty()) {
                     continue;
                 }
-                if (line.equals("/quit") || line.equals("/exit")) {
+                if (isQuit(line)) {
                     break;
                 }
-                handle(line);
+                try {
+                    handle(line);
+                } catch (RuntimeException e) {
+                    // The controller turns expected problems into error responses; this is a last
+                    // safety net so an unexpected bug never ends the session.
+                    out.println("Error: Something went wrong (" + describe(e) + "). Please try again.");
+                }
             }
         } catch (IOException e) {
-            out.println("Input error: " + e.getMessage());
+            out.println("Could not read your input: " + e.getMessage());
         }
         out.println("Good luck with your studies!");
     }
@@ -86,8 +93,11 @@ public class CLIView {
     private void handle(String line) throws IOException {
         String command = line.split("\\s+", 2)[0].toLowerCase(Locale.ROOT);
 
-        if (line.equals("/help")) {
+        if (line.equalsIgnoreCase("help") || line.equals("/help") || line.equals("?")) {
             out.println(HELP);
+        } else if (command.equals("ask") || command.equals("/ask")) {
+            printIfArgument(line, "Thinking...");
+            show(controller.askQuestion(argument(line)));
         } else if (isFileCommand(line, "upload")) {
             printIfArgument(line, "Uploading...");
             show(controller.uploadFile(argument(line)));
@@ -116,7 +126,7 @@ public class CLIView {
         } else if (isExportCommand(line)) {
             export(argument(line));
         } else if (line.startsWith("/")) {
-            out.println("Unknown command. Type /help to see the commands.");
+            out.println("Unknown command " + command + ". Type help to see the commands.");
         } else {
             out.println("Thinking...");
             show(controller.askQuestion(line));
@@ -135,7 +145,7 @@ public class CLIView {
         }
 
         Quiz quiz = response.quiz();
-        out.println(response.message() + " Answer with A-D, or press Enter to skip.");
+        out.println(response.message() + " Answer with A-D, press Enter to skip, or type quit to stop.");
         List<String> answers = new ArrayList<>();
         for (int i = 0; i < quiz.size(); i++) {
             out.println("\nQuestion " + (i + 1) + " of " + quiz.size() + ": " + quiz.questions().get(i));
@@ -162,7 +172,7 @@ public class CLIView {
 
         List<Flashcard> deck = response.cards();
         out.println(response.message() + " Press Enter to flip each card, then answer y or n."
-                + " Type /quit to stop.");
+                + " Type quit to stop.");
 
         Flashcard card = null;
         while ((card = controller.nextFlashcard(deck, card)) != null) {
@@ -170,7 +180,7 @@ public class CLIView {
             out.print("(press Enter to flip) ");
             out.flush();
             String line = in.readLine();
-            if (line == null || line.trim().equals("/quit")) {
+            if (line == null || isQuit(line.trim())) {
                 break;
             }
             out.println("Back:  " + card.back());
@@ -238,13 +248,13 @@ public class CLIView {
         out.println();
     }
 
-    /** Returns true for y, false for n, or null if input ended or the user typed /quit. */
+    /** Returns true for y, false for n, or null if input ended or the user typed quit. */
     private Boolean readYesNo() throws IOException {
         while (true) {
             out.print("Did you get it? (y/n): ");
             out.flush();
             String line = in.readLine();
-            if (line == null || line.trim().equals("/quit")) {
+            if (line == null || isQuit(line.trim())) {
                 return null;
             }
             String answer = line.trim().toLowerCase(Locale.ROOT);
@@ -258,13 +268,13 @@ public class CLIView {
         }
     }
 
-    /** Returns A-D, "" if skipped, or null if input ended or the user typed /quit. */
+    /** Returns A-D, "" if skipped, or null if input ended or the user typed quit. */
     private String readAnswer() throws IOException {
         while (true) {
             out.print("Your answer: ");
             out.flush();
             String line = in.readLine();
-            if (line == null || line.trim().equals("/quit")) {
+            if (line == null || isQuit(line.trim())) {
                 return null;
             }
             String answer = line.trim().toUpperCase(Locale.ROOT);
@@ -314,17 +324,28 @@ public class CLIView {
 
     /** Everything after the command word, e.g. "recursion" from "quiz recursion". */
     private static String argument(String line) {
-        int space = line.indexOf(' ');
-        return space < 0 ? "" : line.substring(space + 1).trim();
+        String[] parts = line.trim().split("\\s+", 2);
+        return parts.length < 2 ? "" : parts[1].trim();
+    }
+
+    private static boolean isQuit(String line) {
+        return line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")
+                || line.equals("/quit") || line.equals("/exit");
+    }
+
+    /** A short description of an unexpected error, for messages shown to the user. */
+    private static String describe(Throwable e) {
+        String message = e.getMessage();
+        return message == null || message.isBlank() ? e.getClass().getSimpleName() : message;
     }
 
     /**
-     * Matches "/name ..." always, but "name ..." only when it ends in a file extension,
-     * so questions such as "upload speed vs download speed?" or "summarize the French
-     * Revolution" are still asked.
+     * Matches "/name ..." and a bare "name" (which then shows usage), but "name ..." only
+     * when it ends in a file extension, so questions such as "upload speed vs download
+     * speed?" or "summarize the French Revolution" are still asked.
      */
     private static boolean isFileCommand(String line, String name) {
-        if (line.equals("/" + name) || line.startsWith("/" + name + " ")) {
+        if (line.equals("/" + name) || line.startsWith("/" + name + " ") || line.equalsIgnoreCase(name)) {
             return true;
         }
         if (!line.toLowerCase(Locale.ROOT).startsWith(name + " ")) {
