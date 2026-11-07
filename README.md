@@ -27,9 +27,9 @@ A command-line study assistant written in Java that uses Google Gemini to explai
    ```
    GEMINI_API_KEY=AIza...
    ```
-   You can also choose a different model (the default is `gemini-2.5-flash`):
+   You can also choose a different model (the default is `gemini-3.5-flash-lite`):
    ```
-   GEMINI_MODEL=gemini-2.5-pro
+   GEMINI_MODEL=gemini-3.8-flash
    ```
    `.env` is listed in `.gitignore`, so your key is never committed. Environment variables set in your shell take precedence over values in `.env`.
 

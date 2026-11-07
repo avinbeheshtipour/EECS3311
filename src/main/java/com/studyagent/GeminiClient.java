@@ -20,7 +20,7 @@ import java.time.Duration;
 public final class GeminiClient {
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
-    private static final String DEFAULT_MODEL = "gemini-2.5-flash";
+    private static final String DEFAULT_MODEL = "gemini-3.5-flash-lite";
 
     private static GeminiClient instance;
 
