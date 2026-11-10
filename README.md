@@ -94,17 +94,29 @@ Uploaded files are split into chunks of about 200 words. When you ask a question
 
 ```
 src/main/java/com/studyagent/
-├── CLIView.java              # View: command-line interface (main class)
-├── MainGUI.java              # View: Swing window (Upload button so far)
-├── StudyController.java      # Controller: routes CLI and GUI requests to StudyService
-├── StudyService.java         # Model: study features (Q&A, uploads)
-├── KnowledgeRepository.java  # Parses PDF/TXT files into Chunks
-├── Chunk.java                # A ~200-word piece of uploaded material
-├── RAGEngine.java            # Indexes chunks and retrieves the most relevant ones
-├── Prompt.java               # Builder pattern: assembles prompts
-├── LLMFacade.java            # Facade pattern: single entry point to the LLM
-├── GeminiProxy.java          # Proxy pattern: caching and retries
-└── GeminiClient.java         # Singleton pattern: the Gemini API connection
+├── CLIView.java                  # View: command-line interface (default main class)
+├── MainGUI.java                  # View: Swing window with a tab per feature
+├── StudyController.java          # Controller (MVC): routes CLI and GUI requests to StudyService
+├── StudyService.java             # Model: entry point for every study feature
+│
+├── KnowledgeRepository.java      # F02: parses PDF/TXT files into Chunks
+├── Chunk.java                    # A ~200-word piece of uploaded material
+├── RAGEngine.java                # F01: indexes chunks, retrieves the most relevant ones
+├── LearningActivityFactory.java  # Factory pattern: builds Quiz, Flashcard, StudyPlan from LLM output
+├── Quiz.java                     # F03: multiple-choice quiz with grading
+├── Flashcard.java                # F04: card with spaced-repetition scoring
+├── StudyPlan.java                # F05: day-by-day milestones
+├── SummarizationService.java     # F06: chunk-by-chunk document summaries
+├── ProgressRepository.java       # F07: quiz scores and flashcard accuracy
+├── ExportService.java            # F08: Markdown and PDF export
+├── RecommendationService.java    # F09: suggestions for the weakest topic
+├── KnowledgeGraph.java           # F11: concept graph as an adjacency list
+├── ConversationMemory.java       # F12: Q&A history
+│
+├── Prompt.java                   # Builder pattern: assembles prompts
+├── LLMFacade.java                # Facade pattern: single entry point to the LLM
+├── GeminiProxy.java              # Proxy pattern: caching and retries
+└── GeminiClient.java             # Singleton pattern: the Gemini API connection
 ```
 
 ## Troubleshooting

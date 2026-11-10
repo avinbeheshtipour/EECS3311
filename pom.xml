@@ -16,6 +16,8 @@
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>com.studyagent.CLIView</main.class>
+        <!-- mvn exec:java runs the CLI; -Dexec.mainClass=com.studyagent.MainGUI opens the window -->
+        <exec.mainClass>${main.class}</exec.mainClass>
 
         <dotenv.version>3.0.2</dotenv.version>
         <jackson.version>2.17.2</jackson.version>
@@ -72,9 +74,8 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
-                <configuration>
-                    <mainClass>${main.class}</mainClass>
-                </configuration>
+                <!-- No <mainClass> here: it would override -Dexec.mainClass. The default comes from
+                     the exec.mainClass property above, which the command line can replace. -->
             </plugin>
 
             <!-- mvn package -> target/ai-study-agent.jar (runnable, with dependencies) -->
