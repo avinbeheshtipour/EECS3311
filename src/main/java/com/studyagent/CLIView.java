@@ -27,6 +27,8 @@ public class CLIView {
               progress                Show your quiz scores and flashcard accuracy
               recommend               Get a study suggestion for your weakest topic
               export [md|pdf] [file]  Save your latest study plan or progress summary
+              weaktopics              List topics by accuracy, weakest first
+              adaptive <topic>        Quiz with difficulty auto-chosen from your progress
               history                 Show the questions you've asked this session
               help                    Show this list of commands
               quit                    Exit
@@ -116,6 +118,10 @@ public class CLIView {
             showStudyPlan(argument(line));
         } else if (command.equals("graph") || command.equals("/graph")) {
             showGraph(argument(line));
+        } else if (line.equalsIgnoreCase("weaktopics") || line.equals("/weaktopics")) {
+            show(controller.weakTopics());
+        } else if (command.equals("adaptive") || command.equals("/adaptive")) {
+            runAdaptiveQuiz(argument(line));
         } else if (line.equalsIgnoreCase("history") || line.equals("/history")) {
             showHistory();
         } else if (line.equalsIgnoreCase("progress") || line.equals("/progress")) {
@@ -138,7 +144,19 @@ public class CLIView {
         if (!topic.isEmpty()) {
             out.println("Generating quiz...");
         }
-        StudyController.QuizResponse response = controller.generateQuiz(topic);
+        takeQuiz(controller.generateQuiz(topic));
+    }
+
+    /** F12 - Runs a quiz whose difficulty is chosen from recent performance. */
+    private void runAdaptiveQuiz(String topic) throws IOException {
+        if (!topic.isEmpty()) {
+            out.println("Choosing difficulty from your progress and generating quiz...");
+        }
+        takeQuiz(controller.generateAdaptiveQuiz(topic));
+    }
+
+    /** Asks each question of a generated quiz, grades it, then offers explanations (F10). */
+    private void takeQuiz(StudyController.QuizResponse response) throws IOException {
         if (!response.success()) {
             out.println("Error: " + response.message());
             return;
@@ -157,6 +175,34 @@ public class CLIView {
             answers.add(answer);
         }
         show(controller.submitQuiz(quiz, answers));
+        offerExplanations(quiz);
+    }
+
+    /**
+     * F10 - Lets the user type "explain N" for any question. Enter or quit goes back to the
+     * main prompt; any other input is treated as a normal command so it isn't lost.
+     */
+    private void offerExplanations(Quiz quiz) throws IOException {
+        out.println("Type 'explain N' (e.g. explain 2) to see why an answer is correct, or press Enter to continue.");
+        while (true) {
+            out.print("explain> ");
+            out.flush();
+            String line = in.readLine();
+            if (line == null || line.isBlank() || isQuit(line.trim())) {
+                return;
+            }
+            String[] parts = line.trim().split("\\s+", 2);
+            if (!parts[0].equalsIgnoreCase("explain")) {
+                handle(line.trim());
+                return;
+            }
+            if (parts.length < 2 || !parts[1].trim().matches("\\d{1,3}")) {
+                out.println("Usage: explain N, where N is a question number from 1 to " + quiz.size() + ".");
+                continue;
+            }
+            out.println("Explaining...");
+            show(controller.explainAnswer(quiz, Integer.parseInt(parts[1].trim()) - 1));
+        }
     }
 
     /** Reviews a generated deck card by card until every card has been answered correctly. */

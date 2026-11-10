@@ -6,6 +6,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -63,6 +64,8 @@ public class MainGUI {
     private final JTextArea quizResultArea = textArea();
     private final List<ButtonGroup> quizAnswerGroups = new ArrayList<>();
     private Quiz currentQuiz;
+    private final JCheckBox adaptiveCheckBox = new JCheckBox("Adaptive difficulty");
+    private final JButton explainButton = new JButton("Explain...");
 
     // Flashcards tab
     private final JTextField flashcardTopicField = new JTextField(24);
@@ -207,11 +210,14 @@ public class MainGUI {
         quizResultArea.setRows(4);
 
         JPanel bottom = new JPanel(new BorderLayout());
-        bottom.add(row(submitQuizButton), BorderLayout.NORTH);
+        explainButton.setEnabled(false);
+        explainButton.addActionListener(guarded(this::explainQuestion));
+        adaptiveCheckBox.setToolTipText("Automatically choose Easy/Medium/Hard based on your past performance");
+        bottom.add(row(submitQuizButton, explainButton), BorderLayout.NORTH);
         bottom.add(new JScrollPane(quizResultArea), BorderLayout.CENTER);
 
         JPanel tab = new JPanel(new BorderLayout());
-        tab.add(row(new JLabel("Topic:"), quizTopicField, generateQuizButton), BorderLayout.NORTH);
+        tab.add(row(new JLabel("Topic:"), quizTopicField, generateQuizButton, adaptiveCheckBox), BorderLayout.NORTH);
         tab.add(questionsScroll, BorderLayout.CENTER);
         tab.add(bottom, BorderLayout.SOUTH);
         return tab;
@@ -224,9 +230,12 @@ public class MainGUI {
             return;
         }
         submitQuizButton.setEnabled(false);
+        explainButton.setEnabled(false);
         quizResultArea.setText("");
-        runInBackground(generateQuizButton, "Generating a quiz on " + topic + "...",
-                progress -> controller.generateQuiz(topic), response -> {
+        boolean adaptive = adaptiveCheckBox.isSelected();
+        String status = adaptive ? "Generating an adaptive quiz on " + topic + "..." : "Generating a quiz on " + topic + "...";
+        runInBackground(generateQuizButton, status,
+                progress -> adaptive ? controller.generateAdaptiveQuiz(topic) : controller.generateQuiz(topic), response -> {
                     statusLabel.setText(response.message());
                     if (response.success()) {
                         showQuiz(response.quiz());
@@ -281,7 +290,35 @@ public class MainGUI {
         }
         showText(quizResultArea, controller.submitQuiz(currentQuiz, answers).message());
         submitQuizButton.setEnabled(false);
+        explainButton.setEnabled(true);
         statusLabel.setText("Quiz submitted. Your score is saved in the Progress tab.");
+    }
+
+    private void explainQuestion() {
+        if (currentQuiz == null) {
+            statusLabel.setText("Generate and submit a quiz first.");
+            return;
+        }
+        String input = JOptionPane.showInputDialog(frame,
+                "Which question? (1–" + currentQuiz.size() + ")", "Explain a question",
+                JOptionPane.QUESTION_MESSAGE);
+        if (input == null || input.isBlank()) return;
+        int n;
+        try {
+            n = Integer.parseInt(input.trim());
+        } catch (NumberFormatException e) {
+            statusLabel.setText("Please enter a question number.");
+            return;
+        }
+        final int idx = n - 1;
+        Quiz quiz = currentQuiz; // a new quiz generated meanwhile must not change which one is explained
+        runInBackground(explainButton, "Explaining question " + n + "...",
+                progress -> controller.explainAnswer(quiz, idx),
+                response -> {
+                    // Add below the score and corrections rather than replacing them.
+                    quizResultArea.append("\n\n" + response.message());
+                    statusLabel.setText(response.success() ? "Explanation ready." : response.message());
+                });
     }
 
     // ---------------------------------------------------------------- Flashcards
@@ -489,12 +526,19 @@ public class MainGUI {
     private JPanel buildProgressTab() {
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(guarded(this::refreshProgress));
+        JButton weakTopicsButton = new JButton("Weak Topics");
+        weakTopicsButton.setToolTipText("List all topics by accuracy, weakest first (F11)");
+        weakTopicsButton.addActionListener(guarded(this::showWeakTopics));
         progressArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
-        return tab(row(refreshButton), progressArea);
+        return tab(row(refreshButton, weakTopicsButton), progressArea);
     }
 
     private void refreshProgress() {
         showText(progressArea, controller.progress().message());
+    }
+
+    private void showWeakTopics() {
+        showText(progressArea, controller.weakTopics().message());
     }
 
     // ---------------------------------------------------------------- Recommend
