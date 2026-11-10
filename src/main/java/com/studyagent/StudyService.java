@@ -222,6 +222,63 @@ public class StudyService {
     private record Exportable(String description, String markdown, String defaultFilename) {
     }
 
+
+    // ── F11 ─────────────────────────────────────────────────────────────────────
+
+    /** F11 - All tracked topics with their accuracy, sorted weakest first. */
+    public String getWeakTopics() {
+        java.util.LinkedHashMap<String, String> stats = recommendationService.getAllTopicStats();
+        if (stats.isEmpty()) {
+            return "No progress yet. Take a quiz or review flashcards to start tracking topics.";
+        }
+        StringBuilder sb = new StringBuilder("Topic accuracy (weakest first):\n");
+        stats.forEach((topic, pct) ->
+                sb.append("  ").append(topic).append(": ").append(pct).append(" correct\n"));
+        return sb.toString().stripTrailing();
+    }
+
+    // ── F12 ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * F12 - Generates a quiz whose difficulty is chosen automatically from progress data.
+     * Returns the quiz; call {@link Quiz#difficulty()} to find out which level was chosen.
+     */
+    public Quiz generateAdaptiveQuiz(String topic) throws IOException, InterruptedException {
+        if (topic == null || topic.isBlank()) {
+            throw new IllegalArgumentException("Please give a quiz topic.");
+        }
+        String difficulty = recommendationService.adaptiveDifficulty();
+        Prompt prompt = Prompt.builder()
+                .topic(topic)
+                .context(relevantContext(topic))
+                .format(LearningActivityFactory.QUIZ_FORMAT
+                        + "\nDifficulty level: " + difficulty
+                        + ". Adjust the complexity of questions accordingly.")
+                .build();
+        Quiz quiz = LearningActivityFactory.createQuiz(topic.trim(), llm.ask(prompt));
+        quiz.setDifficulty(difficulty);
+        return quiz;
+    }
+
+    // ── F10 ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * F10 - Explains why the correct answer to a quiz question is right.
+     *
+     * @param questionText  the full question text (including options)
+     * @param correctAnswer the correct option letter, e.g. "B"
+     */
+    public String explainAnswer(String questionText, String correctAnswer)
+            throws IOException, InterruptedException {
+        Prompt prompt = Prompt.builder()
+                .topic("quiz answer explanation")
+                .context("Question:\n" + questionText + "\n\nCorrect answer: " + correctAnswer)
+                .format("a brief, clear explanation of why this answer is correct (2–4 sentences,"
+                        + " no preamble such as \"The correct answer is…\")")
+                .build();
+        return llm.ask(prompt);
+    }
+
     /**
      * F04 - Spaced repetition: picks the next card to review, or null once every card
      * has been answered correctly. Unlearned cards come first, weakest (lowest

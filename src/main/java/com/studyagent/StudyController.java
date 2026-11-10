@@ -266,6 +266,59 @@ public class StudyController {
         return file.getFileName() == null ? file.toString() : file.getFileName().toString();
     }
 
+
+    // ── F11 ─────────────────────────────────────────────────────────────────────
+
+    /** F11 - All tracked topics with their accuracy, weakest first. */
+    public Response weakTopics() {
+        return Response.ok(service.getWeakTopics());
+    }
+
+    // ── F12 ─────────────────────────────────────────────────────────────────────
+
+    /** F12 - Generates a quiz whose difficulty is chosen automatically from recent performance. */
+    public QuizResponse generateAdaptiveQuiz(String topic) {
+        if (topic == null || topic.isBlank()) {
+            return QuizResponse.error("Please give a quiz topic, e.g. adaptive recursion");
+        }
+        try {
+            Quiz quiz = service.generateAdaptiveQuiz(topic.trim());
+            return new QuizResponse(true,
+                    "Generated a " + quiz.size() + "-question " + quiz.difficulty()
+                            + "-level quiz on " + quiz.topic() + ".", quiz);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return QuizResponse.error("The request was interrupted.");
+        } catch (IllegalArgumentException | java.io.IOException e) {
+            return QuizResponse.error("Could not generate a quiz: " + e.getMessage());
+        }
+    }
+
+    // ── F10 ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * F10 - Explains why the correct answer to a specific quiz question is right.
+     *
+     * @param quiz          the quiz that was just taken
+     * @param questionIndex 0-based index of the question to explain
+     */
+    public Response explainAnswer(Quiz quiz, int questionIndex) {
+        if (quiz == null || questionIndex < 0 || questionIndex >= quiz.size()) {
+            return Response.error("Invalid question number.");
+        }
+        try {
+            String explanation = service.explainAnswer(
+                    quiz.questions().get(questionIndex),
+                    quiz.correctAnswers().get(questionIndex));
+            return Response.ok("Question " + (questionIndex + 1) + " explanation:\n" + explanation);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Response.error("The request was interrupted.");
+        } catch (java.io.IOException e) {
+            return Response.error("Could not get an explanation: " + e.getMessage());
+        }
+    }
+
     /** The outcome of a request: either a message to show, or an error to show. */
     public record Response(boolean success, String message) {
 

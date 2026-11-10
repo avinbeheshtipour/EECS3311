@@ -73,6 +73,61 @@ public class RecommendationService {
         return weakest;
     }
 
+
+    // ── F11 ─────────────────────────────────────────────────────────────────────
+
+    /** Returns every tracked topic mapped to its accuracy percentage string, weakest first. */
+    public java.util.LinkedHashMap<String, String> getAllTopicStats() {
+        Map<String, TopicStats> byTopic = new LinkedHashMap<>();
+        for (ProgressRepository.QuizResult result : progress.quizResults()) {
+            TopicStats stats = statsFor(byTopic, result.topic());
+            stats.correct += Math.min(result.score(), QUESTIONS_PER_QUIZ);
+            stats.total += QUESTIONS_PER_QUIZ;
+        }
+        for (ProgressRepository.FlashcardResult result : progress.flashcardResults()) {
+            TopicStats stats = statsFor(byTopic, result.topic());
+            stats.correct += result.correct();
+            stats.total += result.total();
+        }
+        java.util.LinkedHashMap<String, String> out = new java.util.LinkedHashMap<>();
+        byTopic.entrySet().stream()
+                .filter(e -> e.getValue().total > 0)
+                .sorted(java.util.Comparator.comparingDouble(e -> e.getValue().accuracy()))
+                .forEach(e -> out.put(e.getValue().topic, e.getValue().percent()));
+        return out;
+    }
+
+    // ── F12 ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Chooses quiz difficulty based on overall accuracy across all topics.
+     * Below 50 % → Easy, 50–80 % → Medium, above 80 % → Hard.
+     * Returns "Medium" when there is no progress data yet.
+     */
+    public String adaptiveDifficulty() {
+        Map<String, TopicStats> byTopic = new LinkedHashMap<>();
+        for (ProgressRepository.QuizResult result : progress.quizResults()) {
+            TopicStats stats = statsFor(byTopic, result.topic());
+            stats.correct += Math.min(result.score(), QUESTIONS_PER_QUIZ);
+            stats.total += QUESTIONS_PER_QUIZ;
+        }
+        for (ProgressRepository.FlashcardResult result : progress.flashcardResults()) {
+            TopicStats stats = statsFor(byTopic, result.topic());
+            stats.correct += result.correct();
+            stats.total += result.total();
+        }
+        int totalCorrect = 0, totalAnswered = 0;
+        for (TopicStats stats : byTopic.values()) {
+            totalCorrect += stats.correct;
+            totalAnswered += stats.total;
+        }
+        if (totalAnswered == 0) return "Medium";
+        double accuracy = (double) totalCorrect / totalAnswered;
+        if (accuracy < 0.50) return "Easy";
+        if (accuracy <= 0.80) return "Medium";
+        return "Hard";
+    }
+
     /** Groups results by topic, ignoring case and surrounding spaces. */
     private static TopicStats statsFor(Map<String, TopicStats> byTopic, String topic) {
         return byTopic.computeIfAbsent(topic.trim().toLowerCase(Locale.ROOT), key -> new TopicStats(topic.trim()));

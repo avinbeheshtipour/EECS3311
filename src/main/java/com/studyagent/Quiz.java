@@ -14,6 +14,7 @@ public class Quiz {
     private final List<String> questions;
     private final List<String> correctAnswers;
     private int userScore;
+    private String difficulty; // null = not adaptive
 
     public Quiz(String topic, List<String> questions, List<String> correctAnswers) {
         if (questions.size() != correctAnswers.size()) {
@@ -62,4 +63,8 @@ public class Quiz {
         userScore = score;
         return score;
     }
+
+    /** F12 - Difficulty chosen by adaptive mode; null for a manually-generated quiz. */
+    public String difficulty() { return difficulty; }
+    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
 }
