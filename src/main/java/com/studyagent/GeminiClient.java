@@ -17,7 +17,7 @@ import java.time.Duration;
  * Single shared client for the Gemini generateContent REST endpoint.
  * Obtain it with {@link #getInstance()}.
  */
-public final class GeminiClient {
+public final class GeminiClient implements LLMClient {
 
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
     private static final String DEFAULT_MODEL = "gemini-3.5-flash-lite";
@@ -53,6 +53,7 @@ public final class GeminiClient {
     }
 
     /** Sends a single prompt to Gemini and returns the reply text. */
+    @Override
     public String generate(String prompt) throws IOException, InterruptedException {
         ObjectNode body = mapper.createObjectNode();
         body.putArray("contents").addObject()

@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 public class LLMFacade {
 
-    private final GeminiProxy proxy;
+    private final LLMClient proxy;
 
     public LLMFacade() {
         this.proxy = new GeminiProxy();

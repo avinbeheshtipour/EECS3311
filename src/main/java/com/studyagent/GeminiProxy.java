@@ -9,18 +9,24 @@ import java.util.Map;
  * Stands in for {@link GeminiClient}: repeated prompts are answered from a
  * cache, and failed requests are retried up to {@value #MAX_ATTEMPTS} times.
  */
-public class GeminiProxy {
+public class GeminiProxy implements LLMClient {
 
     private static final int MAX_ATTEMPTS = 3;
     private static final long INITIAL_BACKOFF_MS = 1000;
 
-    private final GeminiClient client;
+    private final LLMClient client;
     private final Map<String, String> cache = new HashMap<>();
 
     public GeminiProxy() {
-        this.client = GeminiClient.getInstance();
+        this(GeminiClient.getInstance());
     }
 
+    /** Wraps any client, e.g. a stub in tests; normally the shared {@link GeminiClient}. */
+    public GeminiProxy(LLMClient client) {
+        this.client = client;
+    }
+
+    @Override
     public String generate(String prompt) throws IOException, InterruptedException {
         synchronized (cache) {
             String cached = cache.get(prompt);
