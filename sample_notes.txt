@@ -1,0 +1,102 @@
+# Data Structures and Algorithms – Sample Course Notes
+
+## Arrays and Linked Lists
+
+An array stores elements in contiguous memory, allowing O(1) random access by index.
+Insertion and deletion at an arbitrary position require O(n) time because elements must
+be shifted.
+
+A singly linked list stores elements in nodes, each holding a value and a pointer to the
+next node. Random access is O(n), but insertion and deletion at a known position are O(1)
+once the pointer to the previous node is available.
+
+A doubly linked list adds a backward pointer to each node, enabling O(1) deletion without
+needing the previous node.
+
+## Stacks and Queues
+
+A stack is a last-in, first-out (LIFO) data structure. The two primary operations are:
+- push: add an element to the top
+- pop: remove and return the top element
+
+A queue is a first-in, first-out (FIFO) data structure. The two primary operations are:
+- enqueue: add an element to the back
+- dequeue: remove and return the front element
+
+Both can be implemented with an array or a linked list in O(1) amortized time.
+
+## Big-O Notation
+
+Big-O notation describes the worst-case growth rate of an algorithm's running time or space
+usage as the input size n grows. Common complexity classes:
+
+| Class      | Example operation             |
+|------------|-------------------------------|
+| O(1)       | Array index lookup            |
+| O(log n)   | Binary search                 |
+| O(n)       | Linear search                 |
+| O(n log n) | Merge sort, heap sort         |
+| O(n^2)     | Bubble sort, insertion sort   |
+| O(2^n)     | Recursive Fibonacci (naive)   |
+
+## Binary Search
+
+Binary search finds a target value in a sorted array in O(log n) time. At each step it
+compares the target to the middle element and eliminates half the remaining elements.
+
+Precondition: the array must be sorted.
+Postcondition: returns the index of the target, or -1 if absent.
+
+## Sorting Algorithms
+
+Merge sort divides the array in half, recursively sorts each half, and merges the sorted
+halves. Time: O(n log n) in all cases. Space: O(n) auxiliary.
+
+Quick sort picks a pivot, partitions elements smaller than the pivot to its left and larger
+to its right, then recursively sorts each partition. Average time: O(n log n). Worst case
+(already sorted with a bad pivot choice): O(n^2).
+
+Insertion sort builds the sorted array one element at a time by inserting each new element
+into its correct position. Time: O(n^2) worst case, O(n) best case (already sorted).
+Preferred for small arrays or nearly-sorted data.
+
+## Hash Tables
+
+A hash table maps keys to values using a hash function that converts a key to a bucket
+index. Average-case time for lookup, insertion, and deletion is O(1).
+
+Collisions occur when two keys hash to the same bucket. Resolution strategies:
+- Separate chaining: each bucket holds a linked list of entries.
+- Open addressing: probe for the next available bucket (linear, quadratic, or double hashing).
+
+The load factor (entries / buckets) affects performance. Rehashing to a larger table when
+the load factor exceeds a threshold (typically 0.75) keeps operations near O(1).
+
+## Trees
+
+A binary tree has at most two children per node. A binary search tree (BST) keeps every
+key in the left subtree smaller than the root and every key in the right subtree larger.
+Lookup, insertion, and deletion are O(h) where h is the tree height. A balanced BST has
+h = O(log n).
+
+An AVL tree and a red-black tree are self-balancing BSTs that keep h = O(log n) through
+rotations after insertions and deletions.
+
+## Graphs
+
+A graph G = (V, E) consists of a set of vertices V and a set of edges E. It can be:
+- Directed (edges have direction) or undirected.
+- Weighted (edges carry a cost) or unweighted.
+
+Common representations:
+- Adjacency matrix: O(V^2) space; O(1) edge lookup.
+- Adjacency list: O(V + E) space; preferred for sparse graphs.
+
+Breadth-first search (BFS) explores vertices level by level and finds shortest paths in
+unweighted graphs. Time: O(V + E).
+
+Depth-first search (DFS) explores as far as possible along each branch before backtracking.
+Used for cycle detection, topological sort, and strongly connected components. Time: O(V + E).
+
+Dijkstra's algorithm finds shortest paths in a weighted graph with non-negative edge weights.
+Time: O((V + E) log V) with a priority queue.
