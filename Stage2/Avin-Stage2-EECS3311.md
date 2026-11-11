@@ -22,7 +22,7 @@ The AI Study and Learning Agent is a Java 17 desktop application for university 
 
 **Status.** 10 of the 12 Stage 1 features are implemented, some with documented changes. One is replaced by a related feature (F04 → N4 Concept Graph), and one is removed (F01 Course Creation). Five new features were added. All implemented features run in both the CLI and the GUI.
 
-**Known limitations** (details in Section 6): data is kept only for the current session; there are no courses; quizzes are multiple choice only; quiz accuracy assumes 5 questions per quiz; retrieval matches keywords rather than meaning.
+**Known limitations** (details in Section 6): data is kept only for the current session; there are no courses; quizzes are multiple choice only; retrieval matches keywords rather than meaning.
 
 ---
 
@@ -148,7 +148,7 @@ Every request follows the same path: **View** (`CLIView` or `MainGUI`) → **`St
 - **Key methods:** `RecommendationService.getAllTopicStats()`, `findWeakestTopic()`, `StudyService.getWeakTopics()`.
 - **How the classes work together:** quiz and flashcard results are grouped by topic, ignoring case. Accuracy is total correct divided by total answered, and topics are listed weakest first.
 - **Where it's used:** `weaktopics` in the CLI; the **Weak Topics** button on the GUI's **Progress** tab.
-- **Changes from Stage 1:** all topics are listed with their percentages, rather than only the topics below a threshold, and there's no separate "Insights" section. Quiz accuracy assumes 5 questions per quiz.
+- **Changes from Stage 1:** all topics are listed with their percentages, rather than only the topics below a threshold, and there's no separate "Insights" section. Accuracy uses the real number of questions in each quiz.
 - **Design patterns:** MVC.
 - **Video:** *[link + timestamp]*
 
@@ -245,7 +245,7 @@ All six patterns from Stage 1 are implemented.
   - The proxy implements the same interface as the real client.
   - It answers repeated prompts from a `HashMap` cache.
   - Otherwise it forwards the request, retrying up to 3 attempts with 1s and 2s waits. Only network errors, HTTP 429 and 5xx are retried; other errors such as a bad key fail straight away.
-- **Compared with Stage 1:** matches. The `LLMClient` interface was added in commit `0836c35`; before that, the proxy and client only shared a method signature.
+- **Compared with Stage 1:** matches. The `LLMClient` interface was added in commit `98c6372`; before that, the proxy and client only shared a method signature.
 
 ### 3.6 Factory
 - **Problem:** turning free-form LLM text into `Quiz`, `Flashcard` and `StudyPlan` objects shouldn't be spread across controllers and services.
@@ -259,7 +259,7 @@ All six patterns from Stage 1 are implemented.
 
 ### 3.7 Updated UML class diagram
 
-The diagram below shows the implemented system. Before converting this report to PDF, export it as an image, for example by pasting the Mermaid code into <https://mermaid.live>. It renders automatically on GitHub.
+The diagram below shows the implemented system.
 
 ```mermaid
 classDiagram
@@ -368,8 +368,8 @@ classDiagram
 | F06 Study plan from exam date, daily hours and weak topics; `StudySession` objects | Topic + number of days; milestones as labelled strings | Simpler input that works without courses or exam dates | `plan <topic> <days>`; plans can be exported (N2) |
 | F07 Flashcards from a chosen material, with a card count | 10 cards per topic using matching uploaded material; added a spaced-repetition review session | No `Material` objects; a review session makes the cards useful straight away | `Flashcard` tracks `timesSeen` and `timesCorrect` |
 | F08 Quiz type and difficulty chosen by the user | Multiple choice only; difficulty set only by F12 | Multiple choice can be graded reliably without AI | No `QuizType`/`Difficulty` enums |
-| F09 Short-answer grading with "Pending Review" | Not implemented; multiple choice graded deterministically | Follows from F08: no short-answer questions are generated | `QuizResult` stores the number correct (not out of how many) |
-| F11 Weak topics shown as a `Map<String, Double>` in an "Insights" section | Every topic listed with its percentage, weakest first (`weaktopics` command and button) | Showing all topics also shows strong ones; no separate Insights screen was needed | Assumes 5 questions per quiz |
+| F09 Short-answer grading with "Pending Review" | Not implemented; multiple choice graded deterministically | Follows from F08: no short-answer questions are generated | `QuizResult` stores the number correct and the number of questions |
+| F11 Weak topics shown as a `Map<String, Double>` in an "Insights" section | Every topic listed with its percentage, weakest first (`weaktopics` command and button) | Showing all topics also shows strong ones; no separate Insights screen was needed | Quiz and flashcard results are combined per topic |
 | F12 Difficulty from recent performance in a course | Overall accuracy for the session, using the same 50%/80% thresholds | No courses, and progress isn't saved between sessions | Same rule as Stage 1, applied to all topics together |
 | Facade: task-specific methods (`summarize()`, `answer()`, `generateQuiz()`) | One method, `LLMFacade.ask(Prompt)` | Services build prompts with the Builder; one method avoids a new facade method per feature | The facade stays small; retrieval is called by `StudyService` |
 | `ResponseParser` class | Merged into `LearningActivityFactory` | Parsing and creation always happen together | One fewer class |
@@ -396,7 +396,7 @@ classDiagram
 | 4 | Change the model to `gemini-2.0-flash` | The AI tested it first, reported a 404 "no longer available", and offered working alternatives | Chose `gemini-3.5-flash-lite` instead |
 | 5 | (AI noticed) A real API key had been typed into the tracked `.env.example` | Warned before any commit; the placeholder was restored, and the git history was checked for keys | Kept the real key only in the gitignored `.env` |
 | 6 | Compare the implementation with the Stage 1 report | Found F01, F10 and F12 missing and F04, F06, F11 partial, and that the Proxy lacked the `LLMClient` interface | Implemented F10–F12, added `LLMClient`, and documented the rest in Section 4 |
-| 7 | Review the F10–F12 code before committing | Found 3 bugs: the CLI dropped input after `explain`, the GUI explanation overwrote the score, and the wrong quiz could be explained | Fixed before committing (`77bbc15`) |
+| 7 | Review the F10–F12 code before committing | Found 3 bugs: the CLI dropped input after `explain`, the GUI explanation overwrote the score, and the wrong quiz could be explained | Fixed before committing (`a151dfd`) |
 
 ---
 
@@ -412,7 +412,7 @@ Dates are in Toronto local time. Links: `https://github.com/avinbeheshtipour/EEC
 | 2 | Oct 27–Nov 2 | 6 code commits: [`8d6bbee`](https://github.com/avinbeheshtipour/EECS3311/commit/8d6bbee) upload (F02) · [`e4449a7`](https://github.com/avinbeheshtipour/EECS3311/commit/e4449a7) fix main class · [`d768859`](https://github.com/avinbeheshtipour/EECS3311/commit/d768859) quiz generation and grading (F08, F09) · [`1fc3840`](https://github.com/avinbeheshtipour/EECS3311/commit/1fc3840) flashcards (F07) · [`689b23a`](https://github.com/avinbeheshtipour/EECS3311/commit/689b23a) study plan (F06) · [`7d11308`](https://github.com/avinbeheshtipour/EECS3311/commit/7d11308) concept graph (N4) and history (N5). *Also: [`d9f7413`](https://github.com/avinbeheshtipour/EECS3311/commit/d9f7413), README only, not counted* |
 | 3 | Nov 3–9 | 6 code commits: [`d4c1f77`](https://github.com/avinbeheshtipour/EECS3311/commit/d4c1f77) summarization (F03) · [`9ae5150`](https://github.com/avinbeheshtipour/EECS3311/commit/9ae5150) progress tracking (N1) · [`9f99b13`](https://github.com/avinbeheshtipour/EECS3311/commit/9f99b13) export (N2) · [`ee35b2f`](https://github.com/avinbeheshtipour/EECS3311/commit/ee35b2f) recommendation (N3) · [`ef194b2`](https://github.com/avinbeheshtipour/EECS3311/commit/ef194b2) GUI tabs for every feature and error handling · [`fc7ad20`](https://github.com/avinbeheshtipour/EECS3311/commit/fc7ad20) switch to a working Gemini model |
 | Outside the periods | Oct 9 | Stage 1 uploads: `1563bea`, `fd335fc`, `d5ec1b6`, `aaf0d2b`, `52137c3`, `bc29550` |
-| Outside the periods | Nov 10 | [`e6926fe`](https://github.com/avinbeheshtipour/EECS3311/commit/e6926fe) GUI launch fix · [`31ff8a6`](https://github.com/avinbeheshtipour/EECS3311/commit/31ff8a6) F10–F12 backend · [`77bbc15`](https://github.com/avinbeheshtipour/EECS3311/commit/77bbc15) F10–F12 views · [`59ff62c`](https://github.com/avinbeheshtipour/EECS3311/commit/59ff62c) sample notes · [`0836c35`](https://github.com/avinbeheshtipour/EECS3311/commit/0836c35) LLMClient interface (Proxy) · report commit |
+| Outside the periods | Nov 10 | [`e6926fe`](https://github.com/avinbeheshtipour/EECS3311/commit/e6926fe) GUI launch fix · [`a0cacc8`](https://github.com/avinbeheshtipour/EECS3311/commit/a0cacc8) F10–F12 backend · [`a151dfd`](https://github.com/avinbeheshtipour/EECS3311/commit/a151dfd) F10–F12 views · [`df63420`](https://github.com/avinbeheshtipour/EECS3311/commit/df63420) sample notes · [`98c6372`](https://github.com/avinbeheshtipour/EECS3311/commit/98c6372) LLMClient interface (Proxy) · [`2117cb4`](https://github.com/avinbeheshtipour/EECS3311/commit/2117cb4) quiz accuracy uses the real quiz length · report commits |
 
 ### 6.2 Checks performed
 
@@ -460,15 +460,15 @@ In the GUI, the same features are on the Ask, Quiz (Adaptive checkbox, Explain..
 | A bare `upload`/`summarize` was sent to Gemini; PDFBox's internal errors were shown to users; folders and unreadable files gave unclear messages | Usage messages and clear file errors (`ef194b2`) |
 | Gemini 2.0/2.5 models returned 404 "no longer available" | Switched to `gemini-3.5-flash-lite` (`fc7ad20`) |
 | `-Dexec.mainClass=…MainGUI` still launched the CLI, because the plugin's `<mainClass>` overrode it | Default moved to the `exec.mainClass` property (`e6926fe`) |
-| After a quiz, input typed at the `explain` prompt was silently dropped; the GUI explanation replaced the score; a new quiz could change which quiz was explained | Fixed while reviewing F10–F12 (`77bbc15`) |
-| `GeminiProxy` didn't share an interface with `GeminiClient`, unlike the Stage 1 design | Added `LLMClient` (`0836c35`) |
+| After a quiz, input typed at the `explain` prompt was silently dropped; the GUI explanation replaced the score; a new quiz could change which quiz was explained | Fixed while reviewing F10–F12 (`a151dfd`) |
+| Quiz accuracy assumed 5 questions per quiz, so a 3-question quiz scored 3/3 counted as 60% in F11, F12 and N3 | `QuizResult` now stores the quiz length; the three copies of the per-topic statistics loop were merged into `RecommendationService.collectStats()` (`2117cb4`) |
+| `GeminiProxy` didn't share an interface with `GeminiClient`, unlike the Stage 1 design | Added `LLMClient` (`98c6372`) |
 
 ### 6.5 Remaining limitations
 
 - **No saved data:** uploaded materials, progress, history and the export source last only for the current session.
 - **No courses:** F01 Course Creation was removed, so all materials share one knowledge base.
 - **No short-answer questions:** quizzes are multiple choice only, so there is no short-answer grading or "Pending Review".
-- **Assumed quiz length:** quiz results store only the number correct, and accuracy assumes 5 questions per quiz. This affects F11, F12 and N3 if the model returns fewer questions.
 - **Adaptive difficulty** (F12) uses overall accuracy for the session, not one topic or course.
 - **Keyword retrieval:** retrieval matches exact keywords, with no stemming or embeddings, so "recursion" doesn't match "recursive".
 - **Concept graph:** it uses the model's general knowledge rather than uploaded material, and has no definitions.

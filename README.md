@@ -1,6 +1,8 @@
 # AI Study Agent
 
-A command-line study assistant written in Java that uses Google Gemini to explain topics, generate quizzes and flashcards, summarize notes, and answer follow-up questions with conversation memory.
+A study assistant for university students, written in Java, with both a command-line interface (CLI) and a desktop window (GUI). It uses Google Gemini to answer questions about your uploaded course notes, summarize documents, generate quizzes, flashcards, study plans and concept graphs, and explain quiz answers. It also tracks your results, finds your weakest topics, picks quiz difficulty from your accuracy, and recommends what to study next.
+
+EECS3311 Course Project. The Stage 2 report is [`stage2-report.pdf`](stage2-report.pdf) (source: [`Stage2/Avin-Stage2-EECS3311.md`](Stage2/Avin-Stage2-EECS3311.md)).
 
 ## Requirements
 
@@ -15,14 +17,16 @@ A command-line study assistant written in Java that uses Google Gemini to explai
 
 1. **Clone the project and enter the folder**
    ```bash
-   git clone <your-repo-url>
-   cd ai-study-agent
+   git clone https://github.com/avinbeheshtipour/EECS3311.git
+   cd EECS3311
    ```
 
 2. **Create your `.env` file**
    ```bash
    cp .env.example .env
    ```
+   On Windows (Command Prompt) use `copy .env.example .env`.
+
    Open `.env` and replace `your_key_here` with your real key:
    ```
    GEMINI_API_KEY=AIza...
@@ -64,11 +68,14 @@ mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 | `ask <question>` | Ask a question; answers draw on any uploaded material (you can also just type the question) |
 | `upload <file>` | Add a PDF or TXT file of course material to the knowledge base |
 | `quiz <topic>` | Take a 5-question multiple-choice quiz, then see your score and corrections |
+| `explain <N>` | After a quiz, at the `explain>` prompt: explain why the answer to question N is correct |
+| `adaptive <topic>` | Take a quiz whose difficulty (Easy/Medium/Hard) is chosen from your accuracy so far |
 | `flashcard <topic>` | Review 10 flashcards; cards you miss come back until you get them right |
 | `plan <topic> <days>` | Break a topic into day-by-day milestones, e.g. `plan recursion 7` |
 | `summarize <file>` | Summarize a PDF or TXT file: each ~200-word chunk in 3 bullet points, then merged into one summary |
 | `progress` | Show your quiz scores and flashcard accuracy for this session |
 | `export [md\|pdf] [file]` | Save your latest study plan or progress summary as Markdown (default) or PDF |
+| `weaktopics` | List every topic you've practised with its accuracy, weakest first |
 | `recommend` | Find your weakest topic from quiz and flashcard results and get a focused study approach |
 | `graph <topic>` | Show how the concepts in a topic connect (as an adjacency list) |
 | `history` | Show the questions you've asked this session and their answers |
@@ -79,18 +86,31 @@ Every command also works with a leading slash, e.g. `/quiz recursion`. Type `qui
 
 ## Desktop Window
 
-The window has a tab for each feature: **Ask**, **Quiz**, **Flashcards**, **Study Plan**, **Summarize**, **Graph**, **Progress**, **Recommend** and **History**. The toolbar's **Upload** button adds course material, and **Export** saves your latest study plan or progress summary as Markdown or PDF.
+The window has a tab for each feature: **Ask**, **Quiz**, **Flashcards**, **Study Plan**, **Summarize**, **Graph**, **Progress**, **Recommend** and **History**. The Quiz tab has an **Adaptive difficulty** checkbox and an **Explain...** button, and the Progress tab has a **Weak Topics** button. The toolbar's **Upload** button adds course material, and **Export** saves your latest study plan or progress summary as Markdown or PDF.
 
-Example session:
+## Example Session
+
+`sample_notes.txt` in the project root contains sample course notes you can try:
 ```
-> upload lecture3.pdf
-Uploaded lecture3.pdf (12 chunks).
-> What is the difference between an abstract class and an interface?
+> upload sample_notes.txt
+Uploaded sample_notes.txt (4 chunks).
+> What is the time complexity of array access?
+> quiz linked lists
+  ... answer A-D for each question, then:
+explain> explain 2
+> weaktopics
+> adaptive linked lists
+> plan hash tables 5
+> export pdf
+> recommend
+> quit
 ```
 
 Uploaded files are split into chunks of about 200 words. When you ask a question, the 3 chunks that best match its keywords are sent to Gemini as context. Scanned PDFs (images of text) can't be read.
 
 ## Project Structure
+
+Feature IDs match the Stage 2 report: F = feature from the Stage 1 report, N = new feature.
 
 ```
 src/main/java/com/studyagent/
@@ -101,20 +121,21 @@ src/main/java/com/studyagent/
 │
 ├── KnowledgeRepository.java      # F02: parses PDF/TXT files into Chunks
 ├── Chunk.java                    # A ~200-word piece of uploaded material
-├── RAGEngine.java                # F01: indexes chunks, retrieves the most relevant ones
+├── RAGEngine.java                # F05: indexes chunks, retrieves the most relevant ones
 ├── LearningActivityFactory.java  # Factory pattern: builds Quiz, Flashcard, StudyPlan from LLM output
-├── Quiz.java                     # F03: multiple-choice quiz with grading
-├── Flashcard.java                # F04: card with spaced-repetition scoring
-├── StudyPlan.java                # F05: day-by-day milestones
-├── SummarizationService.java     # F06: chunk-by-chunk document summaries
-├── ProgressRepository.java       # F07: quiz scores and flashcard accuracy
-├── ExportService.java            # F08: Markdown and PDF export
-├── RecommendationService.java    # F09: suggestions for the weakest topic
-├── KnowledgeGraph.java           # F11: concept graph as an adjacency list
-├── ConversationMemory.java       # F12: Q&A history
+├── Quiz.java                     # F08/F09/F10: multiple-choice quiz, grading, explanations
+├── Flashcard.java                # F07: card with spaced-repetition scoring
+├── StudyPlan.java                # F06: day-by-day milestones
+├── SummarizationService.java     # F03: chunk-by-chunk document summaries
+├── ProgressRepository.java       # N1: quiz scores and flashcard accuracy
+├── ExportService.java            # N2: Markdown and PDF export
+├── RecommendationService.java    # N3/F11/F12: weakest topic, weak-topic list, adaptive difficulty
+├── KnowledgeGraph.java           # N4: concept graph as an adjacency list
+├── ConversationMemory.java       # N5: Q&A history
 │
 ├── Prompt.java                   # Builder pattern: assembles prompts
 ├── LLMFacade.java                # Facade pattern: single entry point to the LLM
+├── LLMClient.java                # Interface shared by GeminiProxy and GeminiClient
 ├── GeminiProxy.java              # Proxy pattern: caching and retries
 └── GeminiClient.java             # Singleton pattern: the Gemini API connection
 ```
