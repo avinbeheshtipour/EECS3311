@@ -13,16 +13,19 @@ public class ProgressRepository {
     private final List<QuizResult> quizResults = new ArrayList<>();
     private final List<FlashcardResult> flashcardResults = new ArrayList<>();
 
-    /** One completed quiz: how many questions were answered correctly, and when. */
-    public record QuizResult(String topic, int score, LocalDate date) {
+    /** One completed quiz: how many of its questions were answered correctly, and when. */
+    public record QuizResult(String topic, int score, int total, LocalDate date) {
     }
 
     /** One flashcard session: correct answers out of total cards reviewed. */
     public record FlashcardResult(String topic, int correct, int total) {
     }
 
-    public void saveQuizResult(String topic, int score) {
-        quizResults.add(new QuizResult(topic, score, LocalDate.now()));
+    public void saveQuizResult(String topic, int score, int total) {
+        if (total <= 0) {
+            return;
+        }
+        quizResults.add(new QuizResult(topic, Math.min(score, total), total, LocalDate.now()));
     }
 
     public void saveFlashcardResult(String topic, int correct, int total) {
@@ -50,13 +53,15 @@ public class ProgressRepository {
         if (!quizResults.isEmpty()) {
             summary.append("Quiz scores:\n");
             int totalScore = 0;
+            int totalQuestions = 0;
             for (QuizResult result : quizResults) {
                 summary.append("  ").append(result.date()).append("  ").append(result.topic())
-                        .append(": ").append(result.score()).append(" correct\n");
+                        .append(": ").append(result.score()).append('/').append(result.total())
+                        .append(" correct (").append(percent(result.score(), result.total())).append(")\n");
                 totalScore += result.score();
+                totalQuestions += result.total();
             }
-            summary.append(String.format("  Average: %.1f correct per quiz%n",
-                    (double) totalScore / quizResults.size()));
+            summary.append("  Overall: ").append(percent(totalScore, totalQuestions)).append('\n');
         }
 
         if (!flashcardResults.isEmpty()) {

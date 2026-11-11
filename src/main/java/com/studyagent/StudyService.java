@@ -74,7 +74,7 @@ public class StudyService {
 
     /** F07 - Records a graded quiz. */
     public void saveQuizResult(Quiz quiz) {
-        progress.saveQuizResult(quiz.topic(), quiz.userScore());
+        progress.saveQuizResult(quiz.topic(), quiz.userScore(), quiz.size());
     }
 
     /** F07 - Records a flashcard session; sessions where no card was reviewed are ignored. */
