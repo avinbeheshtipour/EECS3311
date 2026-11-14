@@ -2,7 +2,28 @@
 
 A study assistant for university students, written in Java, with both a command-line interface (CLI) and a desktop window (GUI). It uses Google Gemini to answer questions about your uploaded course notes, summarize documents, generate quizzes, flashcards, study plans and concept graphs, and explain quiz answers. It also tracks your results, finds your weakest topics, picks quiz difficulty from your accuracy, and recommends what to study next.
 
-EECS3311 Course Project. The Stage 2 report is [`stage2-report.pdf`](stage2-report.pdf) (source: [`Stage2/Avin-Stage2-EECS3311.md`](Stage2/Avin-Stage2-EECS3311.md)).
+EECS3311 Course Project.
+
+| Stage 2 deliverable | Where |
+|---|---|
+| Implementation report | [`stage2-report.pdf`](stage2-report.pdf) |
+| Demonstration video | <https://youtu.be/qk7mwRH_6Yk> (feature timestamps in the report, Section 7) |
+| Updated UML diagrams | [`Stage2/`](Stage2/) (index in [`Stage2/README.md`](Stage2/README.md)) |
+| Stage 1 report and diagrams | [`Stage1/`](Stage1/) |
+
+## Repository Layout
+
+```
+.
+├── README.md             this file: setup, running, commands
+├── stage2-report.pdf     Stage 2 implementation report
+├── pom.xml               Maven build (Java 17)
+├── .env.example          copy to .env and add your Gemini key (.env is gitignored)
+├── sample_notes.txt      sample course notes for trying the app
+├── src/main/java/com/studyagent/   all source code (see Project Structure below)
+├── Stage1/               Stage 1 report (PDF) and UML diagrams
+└── Stage2/               Stage 2 updated UML diagrams
+```
 
 ## Requirements
 

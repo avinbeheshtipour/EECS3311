@@ -1,0 +1,451 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="5256" height="1588" font-family="Helvetica,Arial,sans-serif" font-size="13">
+<defs><marker id="open" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M0,0 L11,6 L0,12" fill="none" stroke="#000"/></marker><marker id="tri" markerWidth="16" markerHeight="16" refX="15" refY="8" orient="auto"><path d="M0,0 L15,8 L0,16 Z" fill="#fff" stroke="#000"/></marker><marker id="fd" markerWidth="22" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L11,1 L21,6 L11,11 Z" fill="#000" stroke="#000"/></marker><marker id="hd" markerWidth="22" markerHeight="12" refX="1" refY="6" orient="auto"><path d="M1,6 L11,1 L21,6 L11,11 Z" fill="#fff" stroke="#000"/></marker></defs>
+<rect width="5256" height="1588" fill="#fff"/>
+<rect x="20" y="10" width="571" height="40" fill="none" stroke="#000"/><rect x="20" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="26" y="25">view</text>
+<rect x="661" y="10" width="560" height="40" fill="none" stroke="#000"/><rect x="661" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="667" y="25">controller</text>
+<rect x="1291" y="10" width="620" height="40" fill="none" stroke="#000"/><rect x="1291" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="1297" y="25">service</text>
+<rect x="1981" y="10" width="836" height="40" fill="none" stroke="#000"/><rect x="1981" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="1987" y="25">repository</text>
+<rect x="2887" y="10" width="571" height="40" fill="none" stroke="#000"/><rect x="2887" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="2893" y="25">model</text>
+<rect x="3528" y="10" width="578" height="40" fill="none" stroke="#000"/><rect x="3528" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="3534" y="25">factory</text>
+<rect x="4176" y="10" width="1040" height="40" fill="none" stroke="#000"/><rect x="4176" y="10" width="110" height="20" fill="#fff" stroke="#000"/><text x="4182" y="25">ai</text>
+<rect x="20" y="130" width="571" height="398" fill="#fff" stroke="#000"/>
+<text x="305.5" text-anchor="middle" y="146">MainGUI</text>
+<line x1="20" x2="591" y1="152" y2="152" stroke="#000"/>
+<text x="26" y="166">- controller: StudyController</text>
+<text x="26" y="182">- frame: JFrame</text>
+<text x="26" y="198">- tabs: JTabbedPane</text>
+<text x="26" y="214">- currentQuiz: Quiz</text>
+<text x="26" y="230">- deck: List&lt;Flashcard&gt;</text>
+<text x="26" y="246">- deckTopic: String</text>
+<text x="26" y="262">- currentCard: Flashcard</text>
+<line x1="20" x2="591" y1="268" y2="268" stroke="#000"/>
+<text x="26" y="282">+ MainGUI(controller: StudyController)</text>
+<text x="26" y="298">+ show(): void</text>
+<text x="26" y="314">+ main(args: String[]): void {static}</text>
+<text x="26" y="330">- buildAskTab(): JPanel</text>
+<text x="26" y="346">- buildQuizTab(): JPanel</text>
+<text x="26" y="362">- buildFlashcardsTab(): JPanel</text>
+<text x="26" y="378">- buildPlanTab(): JPanel</text>
+<text x="26" y="394">- buildSummarizeTab(): JPanel</text>
+<text x="26" y="410">- buildGraphTab(): JPanel</text>
+<text x="26" y="426">- buildProgressTab(): JPanel</text>
+<text x="26" y="442">- buildRecommendTab(): JPanel</text>
+<text x="26" y="458">- buildHistoryTab(): JPanel</text>
+<text x="26" y="474">- chooseAndUpload(): void</text>
+<text x="26" y="490">- chooseAndExport(): void</text>
+<rect x="20" y="573" width="571" height="334" fill="#fff" stroke="#000"/>
+<text x="305.5" text-anchor="middle" y="589">CLIView</text>
+<line x1="20" x2="591" y1="595" y2="595" stroke="#000"/>
+<text x="26" y="609">- HELP: String {static, readOnly}</text>
+<text x="26" y="625">- controller: StudyController</text>
+<text x="26" y="641">- in: BufferedReader</text>
+<text x="26" y="657">- out: PrintStream</text>
+<line x1="20" x2="591" y1="663" y2="663" stroke="#000"/>
+<text x="26" y="677">+ CLIView(controller: StudyController, in: BufferedReader, out: PrintStream)</text>
+<text x="26" y="693">+ main(args: String[]): void {static}</text>
+<text x="26" y="709">+ run(): void</text>
+<text x="26" y="725">- handle(line: String): void</text>
+<text x="26" y="741">- runQuiz(topic: String): void</text>
+<text x="26" y="757">- runAdaptiveQuiz(topic: String): void</text>
+<text x="26" y="773">- takeQuiz(response: QuizResponse): void</text>
+<text x="26" y="789">- offerExplanations(quiz: Quiz): void</text>
+<text x="26" y="805">- runFlashcards(topic: String): void</text>
+<text x="26" y="821">- showStudyPlan(arguments: String): void</text>
+<text x="26" y="837">- showGraph(topic: String): void</text>
+<text x="26" y="853">- showHistory(): void</text>
+<text x="26" y="869">- export(arguments: String): void</text>
+<rect x="661" y="130" width="560" height="414" fill="#fff" stroke="#000"/>
+<text x="941.0" text-anchor="middle" y="146">StudyController</text>
+<line x1="661" x2="1221" y1="152" y2="152" stroke="#000"/>
+<text x="667" y="166">- service: StudyService</text>
+<line x1="661" x2="1221" y1="172" y2="172" stroke="#000"/>
+<text x="667" y="186">+ StudyController(service: StudyService)</text>
+<text x="667" y="202">+ askQuestion(input: String): Response</text>
+<text x="667" y="218">+ addMaterial(text: String): Response</text>
+<text x="667" y="234">+ uploadFile(path: String): Response</text>
+<text x="667" y="250">+ summarizeFile(path: String, progress: ProgressListener): Response</text>
+<text x="667" y="266">+ generateQuiz(topic: String): QuizResponse</text>
+<text x="667" y="282">+ generateAdaptiveQuiz(topic: String): QuizResponse</text>
+<text x="667" y="298">+ submitQuiz(quiz: Quiz, answers: List&lt;String&gt;): Response</text>
+<text x="667" y="314">+ explainAnswer(quiz: Quiz, questionIndex: int): Response</text>
+<text x="667" y="330">+ generateFlashcards(topic: String): FlashcardResponse</text>
+<text x="667" y="346">+ nextFlashcard(deck: List&lt;Flashcard&gt;, previous: Flashcard): Flashcard</text>
+<text x="667" y="362">+ recordFlashcardAnswer(card: Flashcard, correct: boolean): void</text>
+<text x="667" y="378">+ finishFlashcards(topic: String, deck: List&lt;Flashcard&gt;): Response</text>
+<text x="667" y="394">+ generateStudyPlan(topic: String, days: int): PlanResponse</text>
+<text x="667" y="410">+ buildGraph(topic: String): GraphResponse</text>
+<text x="667" y="426">+ progress(): Response</text>
+<text x="667" y="442">+ weakTopics(): Response</text>
+<text x="667" y="458">+ recommend(): Response</text>
+<text x="667" y="474">+ export(format: String, filename: String): Response</text>
+<text x="667" y="490">+ exportableDescription(): String</text>
+<text x="667" y="506">+ history(): List&lt;Exchange&gt;</text>
+<rect x="661" y="589" width="560" height="142" fill="#fff" stroke="#000"/>
+<text x="941.0" text-anchor="middle" y="605">&lt;&lt;record&gt;&gt;</text>
+<text x="941.0" text-anchor="middle" y="621">StudyController::Response</text>
+<line x1="661" x2="1221" y1="627" y2="627" stroke="#000"/>
+<text x="667" y="641">+ success: boolean</text>
+<text x="667" y="657">+ message: String</text>
+<line x1="661" x2="1221" y1="663" y2="663" stroke="#000"/>
+<text x="667" y="677">+ ok(message: String): Response {static}</text>
+<text x="667" y="693">+ error(message: String): Response {static}</text>
+<rect x="661" y="776" width="560" height="158" fill="#fff" stroke="#000"/>
+<text x="941.0" text-anchor="middle" y="792">&lt;&lt;record&gt;&gt; StudyController::QuizResponse</text>
+<text x="941.0" text-anchor="middle" y="808">&lt;&lt;record&gt;&gt; StudyController::FlashcardResponse</text>
+<text x="941.0" text-anchor="middle" y="824">&lt;&lt;record&gt;&gt; StudyController::PlanResponse</text>
+<text x="941.0" text-anchor="middle" y="840">&lt;&lt;record&gt;&gt; StudyController::GraphResponse</text>
+<line x1="661" x2="1221" y1="846" y2="846" stroke="#000"/>
+<text x="667" y="860">+ success: boolean</text>
+<text x="667" y="876">+ message: String</text>
+<text x="667" y="892">+ quiz: Quiz  |  cards: List&lt;Flashcard&gt;</text>
+<text x="667" y="908">   |  plan: StudyPlan  |  graph: Map&lt;String, List&lt;String&gt;&gt;</text>
+<rect x="1291" y="130" width="620" height="590" fill="#fff" stroke="#000"/>
+<text x="1601.0" text-anchor="middle" y="146">StudyService</text>
+<line x1="1291" x2="1911" y1="152" y2="152" stroke="#000"/>
+<text x="1297" y="166">- MAX_PLAN_DAYS: int = 365 {static, readOnly}</text>
+<text x="1297" y="182">- ragEngine: RAGEngine</text>
+<text x="1297" y="198">- knowledgeRepository: KnowledgeRepository</text>
+<text x="1297" y="214">- llm: LLMFacade</text>
+<text x="1297" y="230">- knowledgeGraph: KnowledgeGraph</text>
+<text x="1297" y="246">- summarizationService: SummarizationService</text>
+<text x="1297" y="262">- memory: ConversationMemory</text>
+<text x="1297" y="278">- progress: ProgressRepository</text>
+<text x="1297" y="294">- exportService: ExportService</text>
+<text x="1297" y="310">- recommendationService: RecommendationService</text>
+<text x="1297" y="326">- lastExportable: Exportable</text>
+<line x1="1291" x2="1911" y1="332" y2="332" stroke="#000"/>
+<text x="1297" y="346">+ StudyService()</text>
+<text x="1297" y="362">+ StudyService(ragEngine: RAGEngine, llm: LLMFacade)</text>
+<text x="1297" y="378">+ addMaterial(text: String): void</text>
+<text x="1297" y="394">+ uploadFile(file: Path): List&lt;Chunk&gt;</text>
+<text x="1297" y="410">+ summarize(file: Path, progress: ProgressListener): DocumentSummary</text>
+<text x="1297" y="426">+ askQuestion(input: String): String</text>
+<text x="1297" y="442">+ generateQuiz(topic: String): Quiz</text>
+<text x="1297" y="458">+ generateAdaptiveQuiz(topic: String): Quiz</text>
+<text x="1297" y="474">+ explainAnswer(questionText: String, correctAnswer: String): String</text>
+<text x="1297" y="490">+ saveQuizResult(quiz: Quiz): void</text>
+<text x="1297" y="506">+ generateFlashcards(topic: String): List&lt;Flashcard&gt;</text>
+<text x="1297" y="522">+ nextFlashcard(deck: List&lt;Flashcard&gt;, previous: Flashcard): Flashcard</text>
+<text x="1297" y="538">+ saveFlashcardResult(topic: String, deck: List&lt;Flashcard&gt;): void</text>
+<text x="1297" y="554">+ generateStudyPlan(topic: String, days: int): StudyPlan</text>
+<text x="1297" y="570">+ buildGraph(topic: String): Map&lt;String, List&lt;String&gt;&gt;</text>
+<text x="1297" y="586">+ getProgressSummary(): String</text>
+<text x="1297" y="602">+ getWeakTopics(): String</text>
+<text x="1297" y="618">+ getRecommendation(): String</text>
+<text x="1297" y="634">+ getHistory(): List&lt;Exchange&gt;</text>
+<text x="1297" y="650">+ lastExportableDescription(): String</text>
+<text x="1297" y="666">+ exportLast(pdf: boolean, filename: String): Path</text>
+<text x="1297" y="682">- relevantContext(query: String): String</text>
+<rect x="1291" y="765" width="620" height="174" fill="#fff" stroke="#000"/>
+<text x="1601.0" text-anchor="middle" y="781">SummarizationService</text>
+<line x1="1291" x2="1911" y1="787" y2="787" stroke="#000"/>
+<text x="1297" y="801">- knowledgeRepository: KnowledgeRepository</text>
+<text x="1297" y="817">- llm: LLMFacade</text>
+<line x1="1291" x2="1911" y1="823" y2="823" stroke="#000"/>
+<text x="1297" y="837">+ summarize(file: Path): DocumentSummary</text>
+<text x="1297" y="853">+ summarize(file: Path, progress: ProgressListener): DocumentSummary</text>
+<text x="1297" y="869">- summarizeSection(section: String): String</text>
+<text x="1297" y="885">- merge(source: String, sectionSummaries: List&lt;String&gt;): String</text>
+<text x="1297" y="901">~ groupIntoSections(chunks: List&lt;Chunk&gt;): List&lt;String&gt; {static}</text>
+<rect x="1291" y="984" width="620" height="158" fill="#fff" stroke="#000"/>
+<text x="1601.0" text-anchor="middle" y="1000">RecommendationService</text>
+<line x1="1291" x2="1911" y1="1006" y2="1006" stroke="#000"/>
+<text x="1297" y="1020">- progress: ProgressRepository</text>
+<text x="1297" y="1036">- llm: LLMFacade</text>
+<line x1="1291" x2="1911" y1="1042" y2="1042" stroke="#000"/>
+<text x="1297" y="1056">+ recommend(): String</text>
+<text x="1297" y="1072">+ getAllTopicStats(): LinkedHashMap&lt;String, String&gt;</text>
+<text x="1297" y="1088">+ adaptiveDifficulty(): String</text>
+<text x="1297" y="1104">- collectStats(): Map&lt;String, TopicStats&gt;</text>
+<rect x="1291" y="1187" width="620" height="190" fill="#fff" stroke="#000"/>
+<text x="1601.0" text-anchor="middle" y="1203">KnowledgeGraph</text>
+<line x1="1291" x2="1911" y1="1209" y2="1209" stroke="#000"/>
+<text x="1297" y="1223">~ GRAPH_FORMAT: String {static, readOnly}</text>
+<text x="1297" y="1239">- llm: LLMFacade</text>
+<text x="1297" y="1255">- adjacency: Map&lt;String, List&lt;String&gt;&gt;</text>
+<line x1="1291" x2="1911" y1="1261" y2="1261" stroke="#000"/>
+<text x="1297" y="1275">+ buildGraph(topic: String): Map&lt;String, List&lt;String&gt;&gt;</text>
+<text x="1297" y="1291">+ getGraph(): Map&lt;String, List&lt;String&gt;&gt;</text>
+<text x="1297" y="1307">+ edgeCount(): int</text>
+<text x="1297" y="1323">- parse(reply: String): void</text>
+<text x="1297" y="1339">- addEdge(a: String, b: String): void</text>
+<rect x="1291" y="1422" width="620" height="126" fill="#fff" stroke="#000"/>
+<text x="1601.0" text-anchor="middle" y="1438">ExportService</text>
+<line x1="1291" x2="1911" y1="1444" y2="1444" stroke="#000"/>
+<text x="1297" y="1458">- bodyFont: PDType1Font</text>
+<text x="1297" y="1474">- headingFont: PDType1Font</text>
+<line x1="1291" x2="1911" y1="1480" y2="1480" stroke="#000"/>
+<text x="1297" y="1494">+ exportToMarkdown(content: String, filename: String): Path</text>
+<text x="1297" y="1510">+ exportToPDF(content: String, filename: String): Path</text>
+<rect x="1981" y="130" width="520" height="174" fill="#fff" stroke="#000"/>
+<text x="2241.0" text-anchor="middle" y="146">KnowledgeRepository</text>
+<line x1="1981" x2="2501" y1="152" y2="152" stroke="#000"/>
+<text x="1987" y="166">~ WORDS_PER_CHUNK: int = 200 {static, readOnly}</text>
+<text x="1987" y="182">- ragEngine: RAGEngine</text>
+<text x="1987" y="198">- chunks: List&lt;Chunk&gt;</text>
+<line x1="1981" x2="2501" y1="204" y2="204" stroke="#000"/>
+<text x="1987" y="218">+ upload(file: Path): List&lt;Chunk&gt;</text>
+<text x="1987" y="234">+ readChunks(file: Path): List&lt;Chunk&gt;</text>
+<text x="1987" y="250">+ chunks(): List&lt;Chunk&gt;</text>
+<text x="1987" y="266">~ split(text: String, source: String): List&lt;Chunk&gt; {static}</text>
+<rect x="1981" y="349" width="520" height="206" fill="#fff" stroke="#000"/>
+<text x="2241.0" text-anchor="middle" y="365">RAGEngine</text>
+<line x1="1981" x2="2501" y1="371" y2="371" stroke="#000"/>
+<text x="1987" y="385">- MAX_CHUNK_CHARS: int = 500 {static, readOnly}</text>
+<text x="1987" y="401">- TOP_K: int = 3 {static, readOnly}</text>
+<text x="1987" y="417">- chunks: List&lt;String&gt;</text>
+<line x1="1981" x2="2501" y1="423" y2="423" stroke="#000"/>
+<text x="1987" y="437">+ index(text: String): void</text>
+<text x="1987" y="453">+ index(chunk: Chunk): void</text>
+<text x="1987" y="469">+ retrieve(query: String): List&lt;String&gt;</text>
+<text x="1987" y="485">+ chunks(): List&lt;String&gt;</text>
+<text x="1987" y="501">+ clear(): void</text>
+<text x="1987" y="517">- score(chunk: String, keywords: Set&lt;String&gt;): int {static}</text>
+<rect x="1981" y="600" width="520" height="174" fill="#fff" stroke="#000"/>
+<text x="2241.0" text-anchor="middle" y="616">ProgressRepository</text>
+<line x1="1981" x2="2501" y1="622" y2="622" stroke="#000"/>
+<text x="1987" y="636">- quizResults: List&lt;QuizResult&gt;</text>
+<text x="1987" y="652">- flashcardResults: List&lt;FlashcardResult&gt;</text>
+<line x1="1981" x2="2501" y1="658" y2="658" stroke="#000"/>
+<text x="1987" y="672">+ saveQuizResult(topic: String, score: int, total: int): void</text>
+<text x="1987" y="688">+ saveFlashcardResult(topic: String, correct: int, total: int): void</text>
+<text x="1987" y="704">+ quizResults(): List&lt;QuizResult&gt;</text>
+<text x="1987" y="720">+ flashcardResults(): List&lt;FlashcardResult&gt;</text>
+<text x="1987" y="736">+ getProgressSummary(): String</text>
+<rect x="1981" y="819" width="520" height="126" fill="#fff" stroke="#000"/>
+<text x="2241.0" text-anchor="middle" y="835">&lt;&lt;record&gt;&gt;</text>
+<text x="2241.0" text-anchor="middle" y="851">ProgressRepository::QuizResult</text>
+<line x1="1981" x2="2501" y1="857" y2="857" stroke="#000"/>
+<text x="1987" y="871">+ topic: String</text>
+<text x="1987" y="887">+ score: int</text>
+<text x="1987" y="903">+ total: int</text>
+<text x="1987" y="919">+ date: LocalDate</text>
+<rect x="2541" y="819" width="276" height="110" fill="#fff" stroke="#000"/>
+<text x="2679.0" text-anchor="middle" y="835">&lt;&lt;record&gt;&gt;</text>
+<text x="2679.0" text-anchor="middle" y="851">ProgressRepository::FlashcardResult</text>
+<line x1="2541" x2="2817" y1="857" y2="857" stroke="#000"/>
+<text x="2547" y="871">+ topic: String</text>
+<text x="2547" y="887">+ correct: int</text>
+<text x="2547" y="903">+ total: int</text>
+<rect x="1981" y="990" width="520" height="126" fill="#fff" stroke="#000"/>
+<text x="2241.0" text-anchor="middle" y="1006">ConversationMemory</text>
+<line x1="1981" x2="2501" y1="1012" y2="1012" stroke="#000"/>
+<text x="1987" y="1026">~ MAX_ENTRIES: int = 100 {static, readOnly}</text>
+<text x="1987" y="1042">- history: List&lt;Exchange&gt;</text>
+<line x1="1981" x2="2501" y1="1048" y2="1048" stroke="#000"/>
+<text x="1987" y="1062">+ add(q: String, a: String): void</text>
+<text x="1987" y="1078">+ getHistory(): List&lt;Exchange&gt;</text>
+<rect x="1981" y="1161" width="520" height="94" fill="#fff" stroke="#000"/>
+<text x="2241.0" text-anchor="middle" y="1177">&lt;&lt;record&gt;&gt;</text>
+<text x="2241.0" text-anchor="middle" y="1193">ConversationMemory::Exchange</text>
+<line x1="1981" x2="2501" y1="1199" y2="1199" stroke="#000"/>
+<text x="1987" y="1213">+ question: String</text>
+<text x="1987" y="1229">+ answer: String</text>
+<rect x="4176" y="130" width="500" height="110" fill="#fff" stroke="#000"/>
+<text x="4426.0" text-anchor="middle" y="146">LLMFacade</text>
+<line x1="4176" x2="4676" y1="152" y2="152" stroke="#000"/>
+<text x="4182" y="166">- proxy: LLMClient</text>
+<line x1="4176" x2="4676" y1="172" y2="172" stroke="#000"/>
+<text x="4182" y="186">+ LLMFacade()</text>
+<text x="4182" y="202">+ ask(p: Prompt): String</text>
+<rect x="4176" y="413" width="500" height="78" fill="#fff" stroke="#000"/>
+<text x="4426.0" text-anchor="middle" y="429">&lt;&lt;interface&gt;&gt;</text>
+<text x="4426.0" text-anchor="middle" y="445">LLMClient</text>
+<line x1="4176" x2="4676" y1="451" y2="451" stroke="#000"/>
+<text x="4182" y="465">+ generate(prompt: String): String</text>
+<rect x="4176" y="664" width="500" height="206" fill="#fff" stroke="#000"/>
+<text x="4426.0" text-anchor="middle" y="680">GeminiProxy</text>
+<line x1="4176" x2="4676" y1="686" y2="686" stroke="#000"/>
+<text x="4182" y="700">- MAX_ATTEMPTS: int = 3 {static, readOnly}</text>
+<text x="4182" y="716">- INITIAL_BACKOFF_MS: long = 1000 {static, readOnly}</text>
+<text x="4182" y="732">- client: LLMClient</text>
+<text x="4182" y="748">- cache: Map&lt;String, String&gt;</text>
+<line x1="4176" x2="4676" y1="754" y2="754" stroke="#000"/>
+<text x="4182" y="768">+ GeminiProxy()</text>
+<text x="4182" y="784">+ GeminiProxy(client: LLMClient)</text>
+<text x="4182" y="800">+ generate(prompt: String): String</text>
+<text x="4182" y="816">+ clearCache(): void</text>
+<text x="4182" y="832">- generateWithRetry(prompt: String): String</text>
+<rect x="4176" y="915" width="500" height="222" fill="#fff" stroke="#000"/>
+<text x="4426.0" text-anchor="middle" y="931">GeminiClient</text>
+<line x1="4176" x2="4676" y1="937" y2="937" stroke="#000"/>
+<text x="4182" y="951">- DEFAULT_MODEL: String {static, readOnly}</text>
+<text x="4182" y="967">- instance: GeminiClient {static}</text>
+<text x="4182" y="983">- apiKey: String</text>
+<text x="4182" y="999">- model: String</text>
+<text x="4182" y="1015">- http: HttpClient</text>
+<line x1="4176" x2="4676" y1="1021" y2="1021" stroke="#000"/>
+<text x="4182" y="1035">- GeminiClient()</text>
+<text x="4182" y="1051">+ getInstance(): GeminiClient {static}</text>
+<text x="4182" y="1067">+ generate(prompt: String): String</text>
+<text x="4182" y="1083">+ model(): String</text>
+<text x="4182" y="1099">- extractText(responseBody: String): String</text>
+<rect x="4716" y="130" width="500" height="238" fill="#fff" stroke="#000"/>
+<text x="4966.0" text-anchor="middle" y="146">Prompt</text>
+<line x1="4716" x2="5216" y1="152" y2="152" stroke="#000"/>
+<text x="4722" y="166">- topic: String {readOnly}</text>
+<text x="4722" y="182">- context: String {readOnly}</text>
+<text x="4722" y="198">- difficulty: String {readOnly}</text>
+<text x="4722" y="214">- format: String {readOnly}</text>
+<line x1="4716" x2="5216" y1="220" y2="220" stroke="#000"/>
+<text x="4722" y="234">- Prompt(builder: PromptBuilder)</text>
+<text x="4722" y="250">+ builder(): PromptBuilder {static}</text>
+<text x="4722" y="266">+ topic(): String</text>
+<text x="4722" y="282">+ context(): String</text>
+<text x="4722" y="298">+ difficulty(): String</text>
+<text x="4722" y="314">+ format(): String</text>
+<text x="4722" y="330">+ toText(): String</text>
+<rect x="4716" y="413" width="500" height="206" fill="#fff" stroke="#000"/>
+<text x="4966.0" text-anchor="middle" y="429">Prompt::PromptBuilder</text>
+<line x1="4716" x2="5216" y1="435" y2="435" stroke="#000"/>
+<text x="4722" y="449">- topic: String</text>
+<text x="4722" y="465">- context: String</text>
+<text x="4722" y="481">- difficulty: String</text>
+<text x="4722" y="497">- format: String</text>
+<line x1="4716" x2="5216" y1="503" y2="503" stroke="#000"/>
+<text x="4722" y="517">+ topic(topic: String): PromptBuilder</text>
+<text x="4722" y="533">+ context(context: String): PromptBuilder</text>
+<text x="4722" y="549">+ difficulty(difficulty: String): PromptBuilder</text>
+<text x="4722" y="565">+ format(format: String): PromptBuilder</text>
+<text x="4722" y="581">+ build(): Prompt</text>
+<rect x="3528" y="130" width="578" height="174" fill="#fff" stroke="#000"/>
+<text x="3817.0" text-anchor="middle" y="146">LearningActivityFactory</text>
+<line x1="3528" x2="4106" y1="152" y2="152" stroke="#000"/>
+<text x="3534" y="166">+ QUIZ_FORMAT: String {static, readOnly}</text>
+<text x="3534" y="182">+ FLASHCARD_FORMAT: String {static, readOnly}</text>
+<line x1="3528" x2="4106" y1="188" y2="188" stroke="#000"/>
+<text x="3534" y="202">- LearningActivityFactory()</text>
+<text x="3534" y="218">+ studyPlanFormat(days: int): String {static}</text>
+<text x="3534" y="234">+ createStudyPlan(topic: String, llmOutput: String): StudyPlan {static}</text>
+<text x="3534" y="250">+ createFlashcard(topic: String, llmOutput: String): List&lt;Flashcard&gt; {static}</text>
+<text x="3534" y="266">+ createQuiz(topic: String, llmOutput: String): Quiz {static}</text>
+<rect x="2887" y="285" width="571" height="238" fill="#fff" stroke="#000"/>
+<text x="3172.5" text-anchor="middle" y="301">Quiz</text>
+<line x1="2887" x2="3458" y1="307" y2="307" stroke="#000"/>
+<text x="2893" y="321">- topic: String</text>
+<text x="2893" y="337">- questions: List&lt;String&gt;</text>
+<text x="2893" y="353">- correctAnswers: List&lt;String&gt;</text>
+<text x="2893" y="369">- userScore: int</text>
+<text x="2893" y="385">- difficulty: String</text>
+<line x1="2887" x2="3458" y1="391" y2="391" stroke="#000"/>
+<text x="2893" y="405">+ Quiz(topic: String, questions: List&lt;String&gt;, correctAnswers: List&lt;String&gt;)</text>
+<text x="2893" y="421">+ size(): int</text>
+<text x="2893" y="437">+ isCorrect(index: int, answer: String): boolean</text>
+<text x="2893" y="453">+ grade(answers: List&lt;String&gt;): int</text>
+<text x="2893" y="469">+ difficulty(): String</text>
+<text x="2893" y="485">+ setDifficulty(difficulty: String): void</text>
+<rect x="2887" y="568" width="571" height="190" fill="#fff" stroke="#000"/>
+<text x="3172.5" text-anchor="middle" y="584">Flashcard</text>
+<line x1="2887" x2="3458" y1="590" y2="590" stroke="#000"/>
+<text x="2893" y="604">- front: String</text>
+<text x="2893" y="620">- back: String</text>
+<text x="2893" y="636">- timesCorrect: int</text>
+<text x="2893" y="652">- timesSeen: int</text>
+<line x1="2887" x2="3458" y1="658" y2="658" stroke="#000"/>
+<text x="2893" y="672">+ Flashcard(front: String, back: String)</text>
+<text x="2893" y="688">+ recordAnswer(correct: boolean): void</text>
+<text x="2893" y="704">+ masteryScore(): double</text>
+<text x="2893" y="720">+ isLearned(): boolean</text>
+<rect x="2887" y="803" width="571" height="126" fill="#fff" stroke="#000"/>
+<text x="3172.5" text-anchor="middle" y="819">StudyPlan</text>
+<line x1="2887" x2="3458" y1="825" y2="825" stroke="#000"/>
+<text x="2893" y="839">- topic: String</text>
+<text x="2893" y="855">- milestones: List&lt;String&gt;</text>
+<text x="2893" y="871">- durationDays: int</text>
+<line x1="2887" x2="3458" y1="877" y2="877" stroke="#000"/>
+<text x="2893" y="891">+ StudyPlan(topic: String, milestones: List&lt;String&gt;, durationDays: int)</text>
+<rect x="2887" y="130" width="571" height="110" fill="#fff" stroke="#000"/>
+<text x="3172.5" text-anchor="middle" y="146">&lt;&lt;record&gt;&gt;</text>
+<text x="3172.5" text-anchor="middle" y="162">Chunk</text>
+<line x1="2887" x2="3458" y1="168" y2="168" stroke="#000"/>
+<text x="2893" y="182">+ id: String</text>
+<text x="2893" y="198">+ content: String</text>
+<text x="2893" y="214">+ source: String</text>
+<rect x="20" y="994" width="1201" height="206" fill="#fffbe6" stroke="#000"/>
+<text x="620.5" text-anchor="middle" y="1010">Stage 2 class diagram (implemented system, Nov 2026)</text>
+<line x1="20" x2="1221" y1="1016" y2="1016" stroke="#000"/>
+<text x="26" y="1030">All classes are in the Java package com.studyagent; the boxes above group them by layer, as in Stage 1.</text>
+<text x="26" y="1046">Patterns: MVC (MainGUI / CLIView -&gt; StudyController -&gt; StudyService), Builder (Prompt::PromptBuilder),</text>
+<text x="26" y="1062">Facade (LLMFacade), Proxy (GeminiProxy : LLMClient), Singleton (GeminiClient), Factory (LearningActivityFactory).</text>
+<text x="26" y="1078">New since Stage 1: StudyService, KnowledgeRepository, SummarizationService, RecommendationService,</text>
+<text x="26" y="1094">KnowledgeGraph, ProgressRepository, ConversationMemory, ExportService.</text>
+<text x="26" y="1110">Removed since Stage 1: View, CourseController, CourseService, StudyRepository, ResultRepository,</text>
+<text x="26" y="1126">ProgressAnalyzer, QuizGrader, ResponseParser, AnswerEvaluation, StudyAgentApp, Course, Material,</text>
+<text x="26" y="1142">Concept, StudySession, Question, QuestionResult, LearningSession, Difficulty, QuizType, QuestionType, GradingStatus.</text>
+<text x="26" y="1158">Renamed / reshaped: CLI -&gt; CLIView; PromptBuilder -&gt; nested Prompt::PromptBuilder; QuizResult -&gt; ProgressRepository::QuizResult;</text>
+<text x="26" y="1174">LearningSession -&gt; ConversationMemory::Exchange; QuizGrader.grade -&gt; Quiz.grade; ProgressAnalyzer -&gt; RecommendationService.</text>
+<polyline points="591.0,190.0 661.0,190.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="669" y="184" font-size="12">1</text>
+<polyline points="591.0,740.0 636.0,740.0 636.0,230.0 661.0,230.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="669" y="224" font-size="12">1</text>
+<polyline points="1221.0,190.0 1291.0,190.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="1299" y="184" font-size="12">1</text>
+<polyline points="781.0,544.0 781.0,589.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="785.0" y="562.5" font-size="12">&lt;&lt;create&gt;&gt;</text>
+<polyline points="1221.0,524.0 1243.0,524.0 1243.0,855.0 1221.0,855.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="1225.0" y="685.5" font-size="12">&lt;&lt;create&gt;&gt;</text>
+<polyline points="1911.0,170.0 1981.0,170.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="1989" y="164" font-size="12">1</text>
+<polyline points="1911.0,438.1 1981.0,441.0" fill="none" stroke="#000" marker-start="url(#hd)"/>
+<text x="1989.0" y="435.03125" font-size="12">1</text>
+<polyline points="1911.0,551.9 2028.5,600.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="2036.4809160305344" y="594.0" font-size="12">1</text>
+<polyline points="1901.6,720.0 2176.8,990.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="2184.796178343949" y="984.0" font-size="12">1</text>
+<polyline points="1291.0,700.0 1273.0,700.0 1273.0,790.0 1291.0,790.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="1299" y="784" font-size="12">1</text>
+<polyline points="1291.0,686.0 1264.0,686.0 1264.0,1009.0 1291.0,1009.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="1299" y="1003" font-size="12">1</text>
+<polyline points="1291.0,672.0 1255.0,672.0 1255.0,1212.0 1291.0,1212.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="1299" y="1206" font-size="12">1</text>
+<polyline points="1291.0,658.0 1246.0,658.0 1246.0,1447.0 1291.0,1447.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="1299" y="1441" font-size="12">1</text>
+<polyline points="1688.7,765.0 2153.3,304.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="2161.314960629921" y="320.0" font-size="12">1</text>
+<polyline points="1735.5,984.0 2092.9,774.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="2100.9148936170213" y="790.0" font-size="12">1</text>
+<polyline points="2241.0,304.0 2241.0,349.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="2249.0" y="343" font-size="12">1</text>
+<polyline points="2501.0,185.0 2887.0,185.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="2698.0" y="181.0" font-size="12">chunks</text>
+<text x="2895" y="179.0" font-size="12">*</text>
+<polyline points="2501.0,377.5 2980.6,240.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="2744.808988764045" y="304.7375201288245" font-size="12">&lt;&lt;use&gt;&gt;</text>
+<polyline points="2241.0,774.0 2241.0,819.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="2249.0" y="813" font-size="12">*</text>
+<polyline points="2501.0,754.0 2679.0,754.0 2679.0,819.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="2687.0" y="813" font-size="12">*</text>
+<polyline points="2241.0,1116.0 2241.0,1161.0" fill="none" stroke="#000" marker-start="url(#fd)"/>
+<text x="2249.0" y="1155" font-size="12">0..100</text>
+<polyline points="3528.0,300.9 3458.0,321.2" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="3497.0" y="307.00775795190066" font-size="12">&lt;&lt;create&gt;&gt;</text>
+<polyline points="3691.3,304.0 3309.8,568.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="3504.5302690582957" y="432.0" font-size="12">&lt;&lt;create&gt;&gt;</text>
+<polyline points="3730.6,304.0 3235.1,803.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="3486.8332049306628" y="549.5" font-size="12">&lt;&lt;create&gt;&gt;</text>
+<polyline points="4676.0,185.0 4716.0,185.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="4700.0" y="181.0" font-size="12">&lt;&lt;use&gt;&gt;</text>
+<polyline points="4966.0,413.0 4966.0,368.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="4970.0" y="386.5" font-size="12">&lt;&lt;create&gt;&gt;</text>
+<polyline points="4426.0,240.0 4426.0,413.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="4430.0" y="322.5" font-size="12">proxy</text>
+<text x="4434.0" y="407" font-size="12">1</text>
+<polyline points="4426.0,664.0 4426.0,491.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#tri)"/>
+<polyline points="4176.0,1026.0 4156.0,1026.0 4156.0,452.0 4176.0,452.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#tri)"/>
+<polyline points="4676.0,767.0 4696.0,767.0 4696.0,460.0 4676.0,460.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="4680.0" y="609.5" font-size="12">client (wraps)</text>
+<text x="4646" y="454.0" font-size="12">1</text>
+<polyline points="1761.0,130.0 1761.0,70.0 3588.0,70.0 3588.0,130.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="2678.5" y="126.0" font-size="12">&lt;&lt;use&gt;&gt;</text>
+<polyline points="1801.0,130.0 1801.0,82.0 4776.0,82.0 4776.0,130.0" fill="none" stroke="#000" stroke-dasharray="6,4" marker-end="url(#open)"/>
+<text x="3292.5" y="126.0" font-size="12">&lt;&lt;use&gt;&gt;</text>
+<polyline points="1841.0,130.0 1841.0,94.0 4216.0,94.0 4216.0,130.0" fill="none" stroke="#000" marker-start="url(#hd)"/>
+<text x="4224" y="124" font-size="12">1</text>
+<polyline points="1911.0,852.0 1929.0,852.0 1929.0,58.0 4256.0,58.0 4256.0,130.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="3087.5" y="487.0" font-size="12">llm</text>
+<text x="4264" y="124" font-size="12">1</text>
+<polyline points="1911.0,1063.0 1938.0,1063.0 1938.0,52.0 4281.0,52.0 4281.0,130.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="4289" y="124" font-size="12">1</text>
+<polyline points="1911.0,1282.0 1947.0,1282.0 1947.0,46.0 4306.0,46.0 4306.0,130.0" fill="none" stroke="#000" marker-end="url(#open)"/>
+<text x="4314" y="124" font-size="12">1</text>
+</svg>
