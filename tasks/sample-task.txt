@@ -1,0 +1,11 @@
+upload sample_notes.txt
+ask What is the time complexity of array access?
+plan linked lists 3
+graph linked lists
+quiz linked lists
+A
+B
+C
+D
+A
+progress

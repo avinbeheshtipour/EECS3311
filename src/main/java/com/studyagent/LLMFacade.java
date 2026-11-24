@@ -16,6 +16,11 @@ public class LLMFacade {
         this.proxy = new GeminiProxy();
     }
 
+    /** Selects the Gemini model for every request; call before the first LLMFacade is created. */
+    public static void useModel(String model) {
+        GeminiClient.useModel(model);
+    }
+
     public String ask(Prompt p) throws IOException, InterruptedException {
         if (p == null) {
             throw new IllegalArgumentException("Prompt must not be null.");

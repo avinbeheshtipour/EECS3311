@@ -21,6 +21,14 @@ public class StudyController {
         this.service = service;
     }
 
+    /**
+     * Chooses the LLM model (the CLI's -model option). Call it before creating the
+     * StudyService, because the shared Gemini client keeps the model it was created with.
+     */
+    public static void useModel(String model) {
+        StudyService.useModel(model);
+    }
+
     public Response askQuestion(String input) {
         if (input == null || input.isBlank()) {
             return Response.error("Please enter a question.");

@@ -1,17 +1,25 @@
 package com.studyagent;
 
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * Command-line view. Reads input from stdin and sends every request through
- * {@link StudyController}; it only displays the responses.
+ * Command-line view. Reads commands from the keyboard, a task file or standard input and
+ * sends every request through {@link StudyController}; it only displays the responses.
+ * <p>
+ * Interactive mode (a terminal and no -input/-output) shows the banner, help and prompts.
+ * Non-interactive mode shows none of them, prints each command as "> command" before its
+ * output, prints flashcards instead of reviewing them, and remembers whether any command failed.
  */
 public class CLIView {
 
@@ -38,14 +46,49 @@ public class CLIView {
     private final StudyController controller;
     private final BufferedReader in;
     private final PrintStream out;
+    private final boolean interactive;
+    /** Set when any command fails; non-interactive runs then exit with code 1. */
+    private boolean failed;
+    /** Set when "quit" is read at the explain prompt of a non-interactive run. */
+    private boolean quitRequested;
 
+    /** An interactive view: banner, help and prompts, as typed at a terminal. */
     public CLIView(StudyController controller, BufferedReader in, PrintStream out) {
+        this(controller, in, out, true);
+    }
+
+    public CLIView(StudyController controller, BufferedReader in, PrintStream out, boolean interactive) {
         this.controller = controller;
         this.in = in;
         this.out = out;
+        this.interactive = interactive;
     }
 
     public static void main(String[] args) {
+        CommandLineOptions options;
+        try {
+            options = CommandLineOptions.parse(args);
+        } catch (CommandLineOptions.UsageException e) {
+            System.err.println("Error: " + e.getMessage());
+            if (e.showUsage()) {
+                System.err.println();
+                System.err.print(CommandLineOptions.USAGE);
+            }
+            System.exit(2);
+            return;
+        }
+        if (options.help()) {
+            System.out.print(CommandLineOptions.USAGE);
+            return;
+        }
+        if (options.model() != null) {
+            StudyController.useModel(options.model());
+        }
+        if (options.gui()) {
+            MainGUI.main(new String[0]);
+            return;
+        }
+
         StudyController controller;
         try {
             controller = new StudyController(new StudyService());
@@ -55,25 +98,97 @@ public class CLIView {
             return;
         }
 
-        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-        new CLIView(controller, stdin, System.out).run();
+        if (!options.nonInteractive() && attachedToTerminal()) {
+            BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+            new CLIView(controller, stdin, System.out).run();
+            return;
+        }
+        System.exit(runTask(controller, options));
+    }
+
+    /**
+     * Runs the commands from -input (or standard input) without prompts and returns the exit
+     * code: 0 if every command succeeded, 1 if any failed, 2 if a file couldn't be opened.
+     */
+    private static int runTask(StudyController controller, CommandLineOptions options) {
+        BufferedReader in;
+        try {
+            in = options.readsStdin()
+                    ? new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8))
+                    : Files.newBufferedReader(Path.of(options.input()), StandardCharsets.UTF_8);
+        } catch (IOException | InvalidPathException e) {
+            System.err.println("Error: cannot read the input file " + options.input() + " (" + fileProblem(e) + ").");
+            return 2;
+        }
+
+        PrintStream out = System.out;
+        if (options.output() != null) {
+            try {
+                out = new PrintStream(Files.newOutputStream(Path.of(options.output())), true, StandardCharsets.UTF_8);
+            } catch (IOException | InvalidPathException e) {
+                System.err.println("Error: cannot write the output file " + options.output() + " (" + fileProblem(e) + ").");
+                return 2;
+            }
+        }
+
+        CLIView view = new CLIView(controller, in, out, false);
+        view.run();
+        out.flush();
+        if (out != System.out) {
+            out.close();
+        }
+        return view.hasFailures() ? 1 : 0;
+    }
+
+    /** A short reason why a task or output file couldn't be opened. */
+    private static String fileProblem(Exception e) {
+        if (e instanceof java.nio.file.NoSuchFileException) {
+            return "file or folder not found";
+        }
+        if (e instanceof java.nio.file.AccessDeniedException) {
+            return "permission denied";
+        }
+        return describe(e);
+    }
+
+    /**
+     * True when the program runs in a real terminal. Java 22 and later always return a Console,
+     * so its isTerminal() is checked too (called reflectively because the code targets Java 17).
+     */
+    static boolean attachedToTerminal() {
+        Console console = System.console();
+        if (console == null) {
+            return false;
+        }
+        try {
+            return (Boolean) Console.class.getMethod("isTerminal").invoke(console);
+        } catch (ReflectiveOperationException e) {
+            return true; // Java 17-21: a console is only returned for a terminal
+        }
     }
 
     public void run() {
-        out.println("AI Study Agent");
-        out.println(HELP);
+        if (interactive) {
+            out.println("AI Study Agent");
+            out.println(HELP);
+        }
 
         try {
             String line;
-            while (true) {
-                out.print("> ");
-                out.flush();
+            while (!quitRequested) {
+                if (interactive) {
+                    out.print("> ");
+                    out.flush();
+                }
                 if ((line = in.readLine()) == null) {
                     break;
                 }
                 line = line.trim();
                 if (line.isEmpty()) {
                     continue;
+                }
+                if (!interactive) {
+                    out.println("> " + line);
                 }
                 if (isQuit(line)) {
                     break;
@@ -83,13 +198,27 @@ public class CLIView {
                 } catch (RuntimeException e) {
                     // The controller turns expected problems into error responses; this is a last
                     // safety net so an unexpected bug never ends the session.
-                    out.println("Error: Something went wrong (" + describe(e) + "). Please try again.");
+                    fail("Something went wrong (" + describe(e) + "). Please try again.");
                 }
             }
         } catch (IOException e) {
             out.println("Could not read your input: " + e.getMessage());
+            failed = true;
         }
-        out.println("Good luck with your studies!");
+        if (interactive) {
+            out.println("Good luck with your studies!");
+        }
+    }
+
+    /** True if any command in this session failed. */
+    public boolean hasFailures() {
+        return failed;
+    }
+
+    /** Prints an error and records the failure. */
+    private void fail(String message) {
+        out.println("Error: " + message);
+        failed = true;
     }
 
     private void handle(String line) throws IOException {
@@ -133,6 +262,7 @@ public class CLIView {
             export(argument(line));
         } else if (line.startsWith("/")) {
             out.println("Unknown command " + command + ". Type help to see the commands.");
+            failed = true;
         } else {
             out.println("Thinking...");
             show(controller.askQuestion(line));
@@ -158,18 +288,23 @@ public class CLIView {
     /** Asks each question of a generated quiz, grades it, then offers explanations (F10). */
     private void takeQuiz(StudyController.QuizResponse response) throws IOException {
         if (!response.success()) {
-            out.println("Error: " + response.message());
+            fail(response.message());
             return;
         }
 
         Quiz quiz = response.quiz();
-        out.println(response.message() + " Answer with A-D, press Enter to skip, or type quit to stop.");
+        out.println(interactive
+                ? response.message() + " Answer with A-D, press Enter to skip, or type quit to stop."
+                : response.message());
         List<String> answers = new ArrayList<>();
         for (int i = 0; i < quiz.size(); i++) {
             out.println("\nQuestion " + (i + 1) + " of " + quiz.size() + ": " + quiz.questions().get(i));
             String answer = readAnswer();
             if (answer == null) {
                 out.println("Quiz cancelled.");
+                if (!interactive) {
+                    failed = true; // the task file ended or said quit before all answers were given
+                }
                 return;
             }
             answers.add(answer);
@@ -183,12 +318,23 @@ public class CLIView {
      * main prompt; any other input is treated as a normal command so it isn't lost.
      */
     private void offerExplanations(Quiz quiz) throws IOException {
-        out.println("Type 'explain N' (e.g. explain 2) to see why an answer is correct, or press Enter to continue.");
+        if (interactive) {
+            out.println("Type 'explain N' (e.g. explain 2) to see why an answer is correct, or press Enter to continue.");
+        }
         while (true) {
-            out.print("explain> ");
-            out.flush();
+            if (interactive) {
+                out.print("explain> ");
+                out.flush();
+            }
             String line = in.readLine();
-            if (line == null || line.isBlank() || isQuit(line.trim())) {
+            if (line == null || line.isBlank()) {
+                return;
+            }
+            if (!interactive) {
+                out.println("> " + line.trim());
+            }
+            if (isQuit(line.trim())) {
+                quitRequested = !interactive; // in a task file, quit ends the run
                 return;
             }
             String[] parts = line.trim().split("\\s+", 2);
@@ -198,6 +344,7 @@ public class CLIView {
             }
             if (parts.length < 2 || !parts[1].trim().matches("\\d{1,3}")) {
                 out.println("Usage: explain N, where N is a question number from 1 to " + quiz.size() + ".");
+                failed = true;
                 continue;
             }
             out.println("Explaining...");
@@ -212,11 +359,21 @@ public class CLIView {
         }
         StudyController.FlashcardResponse response = controller.generateFlashcards(topic);
         if (!response.success()) {
-            out.println("Error: " + response.message());
+            fail(response.message());
             return;
         }
 
         List<Flashcard> deck = response.cards();
+        if (!interactive) {
+            // A task file can't know how many lines a review takes, so the cards are only printed.
+            out.println(response.message());
+            for (int i = 0; i < deck.size(); i++) {
+                out.println("\n" + (i + 1) + ". Front: " + deck.get(i).front());
+                out.println("   Back:  " + deck.get(i).back());
+            }
+            out.println();
+            return;
+        }
         out.println(response.message() + " Press Enter to flip each card, then answer y or n."
                 + " Type quit to stop.");
 
@@ -247,13 +404,14 @@ public class CLIView {
         String topic = lastSpace < 0 ? "" : arguments.substring(0, lastSpace).trim();
         if (topic.isEmpty() || !daysText.matches("\\d{1,4}")) {
             out.println("Usage: plan <topic> <days>, e.g. plan recursion 7");
+            failed = true;
             return;
         }
 
         out.println("Generating study plan...");
         StudyController.PlanResponse response = controller.generateStudyPlan(topic, Integer.parseInt(daysText));
         if (!response.success()) {
-            out.println("Error: " + response.message());
+            fail(response.message());
             return;
         }
 
@@ -270,7 +428,7 @@ public class CLIView {
         }
         StudyController.GraphResponse response = controller.buildGraph(topic);
         if (!response.success()) {
-            out.println("Error: " + response.message());
+            fail(response.message());
             return;
         }
 
@@ -314,18 +472,34 @@ public class CLIView {
         }
     }
 
-    /** Returns A-D, "" if skipped, or null if input ended or the user typed quit. */
+    /**
+     * Returns A-D, "" if skipped, or null if input ended or the user typed quit. In a task file
+     * each answer is one line; an invalid line is reported and counted as skipped, so the
+     * following lines are still read as the next answers.
+     */
     private String readAnswer() throws IOException {
         while (true) {
-            out.print("Your answer: ");
-            out.flush();
+            if (interactive) {
+                out.print("Your answer: ");
+                out.flush();
+            }
             String line = in.readLine();
-            if (line == null || isQuit(line.trim())) {
+            if (line == null) {
+                return null;
+            }
+            if (!interactive) {
+                out.println("> " + (line.isBlank() ? "(skipped)" : line.trim()));
+            }
+            if (isQuit(line.trim())) {
                 return null;
             }
             String answer = line.trim().toUpperCase(Locale.ROOT);
             if (answer.isEmpty() || answer.matches("[A-D]")) {
                 return answer;
+            }
+            if (!interactive) {
+                fail("\"" + line.trim() + "\" is not an answer (use A, B, C, D or an empty line); counted as skipped.");
+                return "";
             }
             out.println("Please enter A, B, C or D (or press Enter to skip).");
         }
@@ -403,5 +577,8 @@ public class CLIView {
 
     private void show(StudyController.Response response) {
         out.println(response.success() ? "\n" + response.message() + "\n" : "Error: " + response.message());
+        if (!response.success()) {
+            failed = true;
+        }
     }
 }

@@ -8,6 +8,7 @@ EECS3311 Course Project.
 |---|---|
 | Implementation report | [`stage2-report.pdf`](stage2-report.pdf) |
 | Demonstration video | <https://youtu.be/qk7mwRH_6Yk> (feature timestamps in the report, Section 7) |
+| Demonstration video 2: same task in the GUI, then the standalone CLI | _(link to be added)_ |
 | Updated UML diagrams | [`Stage2/`](Stage2/) (index in [`Stage2/README.md`](Stage2/README.md)) |
 | Stage 1 report and diagrams | [`Stage1/`](Stage1/) |
 
@@ -20,7 +21,9 @@ EECS3311 Course Project.
 ├── pom.xml               Maven build (Java 17)
 ├── .env.example          copy to .env and add your Gemini key (.env is gitignored)
 ├── sample_notes.txt      sample course notes for trying the app
+├── tasks/sample-task.txt sample task for the standalone CLI (see Standalone CLI below)
 ├── src/main/java/com/studyagent/   all source code (see Project Structure below)
+├── src/test/java/com/studyagent/   JUnit tests (run by mvn clean package)
 ├── Stage1/               Stage 1 report (PDF) and UML diagrams
 └── Stage2/               Stage 2 updated UML diagrams
 ```
@@ -79,8 +82,74 @@ Run from the project root so the `.env` file is found.
 
 To open the desktop window instead of the CLI:
 ```bash
+java -jar target/ai-study-agent.jar -gui
+```
+or, from Maven:
+```bash
 mvn -q exec:java -Dexec.mainClass=com.studyagent.MainGUI
 ```
+
+## Standalone CLI
+
+The agent can also run a whole task straight from a terminal, reading the commands from a file or from standard input instead of the keyboard:
+
+```bash
+java -jar target/ai-study-agent.jar -LLMAPI gemini -input tasks/sample-task.txt
+```
+
+Run it from the project root, so `.env` and the files named in the task are found.
+
+| Option | What it does |
+|---|---|
+| `-input <file>` | Run the commands in `<file>`, one per line. Use `-` to read them from standard input |
+| `-output <file>` | Write all output to `<file>` instead of the terminal |
+| `-model <name>` | Gemini model to use, e.g. `gemini-3.5-flash-lite`; overrides `GEMINI_MODEL` in `.env` |
+| `-LLMAPI <name>` | LLM API to use. Only `gemini` is supported (the default); any other value is an error |
+| `-gui` | Open the desktop window instead of the command line |
+| `-help` | Show the options and exit |
+
+Option names are not case-sensitive. The API key always comes from `GEMINI_API_KEY` in `.env`; it can't be given on the command line.
+
+**Task file.** A task file holds the same commands you would type in the CLI (see [CLI Commands](#cli-commands)), one per line. This is [`tasks/sample-task.txt`](tasks/sample-task.txt):
+
+```
+upload sample_notes.txt
+ask What is the time complexity of array access?
+plan linked lists 3
+graph linked lists
+quiz linked lists
+A
+B
+C
+D
+A
+progress
+```
+
+The five lines after `quiz linked lists` are the quiz answers (A–D, or an empty line to skip a question). The line after the answers may be `explain N`; any other command, like `progress` here, simply runs next.
+
+**How a task runs.** With `-input` or `-output`, or when standard input isn't a terminal (for example `java -jar target/ai-study-agent.jar < tasks/sample-task.txt`), the agent runs without stopping for input:
+- no banner, help text or prompts are shown;
+- each command is printed as `> command` before its output;
+- `flashcard <topic>` prints the cards instead of starting a review;
+- `quit` ends the task early.
+
+With no options in a terminal, the CLI is interactive exactly as described in [Running](#running).
+
+More examples:
+```bash
+# read the task from standard input and save the result to a file
+java -jar target/ai-study-agent.jar -input - -output result.txt < tasks/sample-task.txt
+
+# use a different Gemini model for this run
+java -jar target/ai-study-agent.jar -model gemini-3.8-flash -input tasks/sample-task.txt
+```
+
+| Exit code | Meaning |
+|---|---|
+| 0 | Every command succeeded |
+| 1 | At least one command failed (its `Error: ...` message is in the output) |
+| 2 | Invalid options, an unsupported `-LLMAPI`, or an input/output file that can't be opened |
 
 ## CLI Commands
 
@@ -136,6 +205,7 @@ Feature IDs match the Stage 2 report: F = feature from the Stage 1 report, N = n
 ```
 src/main/java/com/studyagent/
 ├── CLIView.java                  # View: command-line interface (default main class)
+├── CommandLineOptions.java       # View: parses the standalone CLI options (-input, -output, -model, -LLMAPI, -gui, -help)
 ├── MainGUI.java                  # View: Swing window with a tab per feature
 ├── StudyController.java          # Controller (MVC): routes CLI and GUI requests to StudyService
 ├── StudyService.java             # Model: entry point for every study feature
@@ -165,5 +235,5 @@ src/main/java/com/studyagent/
 
 - **`GEMINI_API_KEY is not set`**: make sure `.env` exists in the project root and contains your real key, not the placeholder.
 - **`Gemini API error 400/403`**: check that the key is valid and the Generative Language API is enabled for it.
-- **`Gemini API error 404`**: the model name in `GEMINI_MODEL` is wrong or not available to your key.
+- **`Gemini API error 404`**: the model name in `GEMINI_MODEL` (or `-model`) is wrong or not available to your key.
 - **`Gemini API error 429`**: you've hit the rate limit or quota; wait a moment and try again.

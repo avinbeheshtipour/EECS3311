@@ -39,6 +39,11 @@ public class StudyService {
         this.recommendationService = new RecommendationService(progress, llm);
     }
 
+    /** Chooses the LLM model for this run; call before the first StudyService is created. */
+    public static void useModel(String model) {
+        LLMFacade.useModel(model);
+    }
+
     /** Indexes notes, slides or readings so later questions can draw on them. */
     public void addMaterial(String text) {
         ragEngine.index(text);

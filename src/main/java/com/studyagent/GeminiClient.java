@@ -23,6 +23,8 @@ public final class GeminiClient implements LLMClient {
     private static final String DEFAULT_MODEL = "gemini-3.5-flash-lite";
 
     private static GeminiClient instance;
+    /** Set by the CLI's -model option; when null, GEMINI_MODEL (or the default) is used. */
+    private static String modelOverride;
 
     private final String apiKey;
     private final String model;
@@ -39,10 +41,32 @@ public final class GeminiClient implements LLMClient {
         String configuredModel = dotenv.get("GEMINI_MODEL");
 
         this.apiKey = key.trim();
-        this.model = (configuredModel == null || configuredModel.isBlank()) ? DEFAULT_MODEL : configuredModel.trim();
+        if (modelOverride != null) {
+            this.model = modelOverride;
+        } else {
+            this.model = (configuredModel == null || configuredModel.isBlank()) ? DEFAULT_MODEL : configuredModel.trim();
+        }
         this.http = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(15))
                 .build();
+    }
+
+    /**
+     * Uses {@code model} instead of GEMINI_MODEL. The API key still comes only from .env.
+     * Must be called before the first {@link #getInstance()}, because the shared client
+     * keeps the model it was created with.
+     *
+     * @throws IllegalArgumentException if the name isn't a plain model name such as gemini-3.5-flash-lite
+     * @throws IllegalStateException if the client already exists with a different model
+     */
+    public static synchronized void useModel(String model) {
+        if (model == null || !model.matches("[A-Za-z0-9._-]+")) {
+            throw new IllegalArgumentException("Invalid model name: " + model);
+        }
+        if (instance != null && !instance.model.equals(model)) {
+            throw new IllegalStateException("The Gemini client is already using " + instance.model + ".");
+        }
+        modelOverride = model;
     }
 
     public static synchronized GeminiClient getInstance() {
