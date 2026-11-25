@@ -8,7 +8,6 @@ EECS3311 Course Project.
 |---|---|
 | Implementation report | [`stage2-report.pdf`](stage2-report.pdf) |
 | Demonstration video | <https://youtu.be/qk7mwRH_6Yk> (feature timestamps in the report, Section 7) |
-| Demonstration video 2: same task in the GUI, then the standalone CLI | _(link to be added)_ |
 | Updated UML diagrams | [`Stage2/`](Stage2/) (index in [`Stage2/README.md`](Stage2/README.md)) |
 | Stage 1 report and diagrams | [`Stage1/`](Stage1/) |
 
